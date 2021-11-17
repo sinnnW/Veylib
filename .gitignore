@@ -1,0 +1,5 @@
+.git/
+.vs/
+.vscode/
+Veylib/bin
+Veylib/obj
