@@ -50,10 +50,12 @@
     <Compile Include="Authentication\Shared.cs" />
     <Compile Include="Authentication\Subscription.cs" />
     <Compile Include="Authentication\User.cs" />
+    <Compile Include="Authentication\Vars.cs" />
     <Compile Include="CLIUI\AsciiTable.cs" />
     <Compile Include="CLIUI\Core.cs" />
     <Compile Include="CLIUI\Formatting.cs" />
     <Compile Include="ColorManagement.cs" />
+    <Compile Include="DependencyControl.cs" />
     <Compile Include="General.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Hashing.cs" />

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Management;
 using System.Net;
 using System.IO;
+using System.Diagnostics;
 
 using Newtonsoft.Json;
-
-
 
 namespace Veylib.Authentication
 {
@@ -63,10 +62,22 @@ namespace Veylib.Authentication
         /// <returns>Dynamic of the JSON returned</returns>
         public static dynamic ReadResponse(WebRequest req)
         {
-            var resp = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
-            var json = JsonConvert.DeserializeObject<dynamic>(resp);
+            try
+            {
+                var resp = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+                var json = JsonConvert.DeserializeObject<dynamic>(resp);
 
-            return json;
+                return json;
+            } catch (WebException ex)
+            {
+                Debug.WriteLine(new StreamReader(ex.Response.GetResponseStream()).ReadToEnd());
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return null;
+            }
         }
 
         public static Dictionary<string, string> OrganizeProperties(dynamic dyn)

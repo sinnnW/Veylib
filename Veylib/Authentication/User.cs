@@ -68,6 +68,10 @@ namespace Veylib.Authentication
             else if (json.code == 400)
             {
                 UserVerificationState err;
+
+                if ((string)json.extra == "{}")
+                    return new UserData { State = UserVerificationState.UnknownError, ErrorMessage = json.message };
+
                 switch (((string)json.extra).ToLower())
                 {
                     case "invalid credentials were provided.":
@@ -176,7 +180,6 @@ namespace Veylib.Authentication
             var req = Shared.GenerateWR("auth/user");
             req.Method = "PUT";
             req.ContentType = "application/json";
-            req.Headers.Add("Authorization", authToken);
 
             byte[] body = Encoding.UTF8.GetBytes("{ \"username\": \"" + username + "\", \"password\": \"" + password + "\", \"app_id\": " + Shared.AppID + ", \"permissions\": " + (int)permissions + " }");
             req.GetRequestStream().Write(body, 0, body.Length);

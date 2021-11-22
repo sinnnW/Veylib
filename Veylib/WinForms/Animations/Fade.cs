@@ -8,6 +8,7 @@ namespace Veylib.WinForms.Animations
     {
         public Fade(Form form = null)
         {
+            form.Opacity = 0;
             frm = form;
         }
 
@@ -50,6 +51,9 @@ namespace Veylib.WinForms.Animations
             tmr.Interval = 15;
             tmr.Tick += (e1, e2) =>
             {
+                if (frm == null)
+                    tmr.Stop();
+
                 // Fading shit.
                 if (mode == Mode.FadeIn)
                 {
@@ -65,22 +69,21 @@ namespace Veylib.WinForms.Animations
                 {
                     if (frm.Opacity <= 0)
                     {
-                        // Hide the form
-                        frm.Invoke((MethodInvoker)(() => { frm.Hide(); }));
-
                         // Force closing (if enabled)
                         if (forceClose)
                             Environment.Exit(0);
                         else if (close) // Invoking the event
                             frm.Invoke((MethodInvoker)(() => { frm.Close(); }));
+
+                        // Hide the form
+                        //frm.Invoke((MethodInvoker)(() => { frm.Hide(); }));
+
                         FadeComplete?.Invoke(mode);
                         tmr.Stop();
                     }
                     else
                         setopacity(frm.Opacity - 0.05);
                 }
-
-                Debug.WriteLine($"OP: {opacity}");
 
                 // Update opacity
                 OpacityUpdate?.Invoke(opacity);
@@ -98,7 +101,7 @@ namespace Veylib.WinForms.Animations
         /// Fade the control in.
         /// </summary>
         public void In()
-        {
+          {
             // Duh.
             fade(Mode.FadeIn);
         }

@@ -43,25 +43,25 @@ namespace Veylib.Authentication
                 return new AppData { State = AppState.Unknown };
         }
 
-        public static string GetVar(string Key)
-        {
-            // Setup the request
-            WebRequest req = WebRequest.Create($"{Shared.APIUrl}/auth/vars/{Shared.AppID}/-1/{Key}");
+        //public static string GetVar(string Key)
+        //{
+        //    // Setup the request
+        //    WebRequest req = WebRequest.Create($"{Shared.APIUrl}/auth/vars/{Shared.AppID}/-1/{Key}");
 
-            // Add headers as a just in case
-            req.Headers.Add("Authorization", User.CurrentUser.Token);
-            req.Headers.Add("HWID", Shared.HWID);
+        //    // Add headers as a just in case
+        //    req.Headers.Add("Authorization", User.CurrentUser.Token);
+        //    req.Headers.Add("HWID", Shared.HWID);
 
-            // Get the response and parse in from JSON
-            string resp = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
-            dynamic json = JsonConvert.DeserializeObject<dynamic>(resp);
+        //    // Get the response and parse in from JSON
+        //    string resp = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+        //    dynamic json = JsonConvert.DeserializeObject<dynamic>(resp);
 
-            // If its not 200, there was an error
-            if (json.code != 200)
-                throw new ServerError((string)json.message);
+        //    // If its not 200, there was an error
+        //    if (json.code != 200)
+        //        throw new ServerError((string)json.message);
 
-            return json.extra.value;
-        }
+        //    return json.extra.value;
+        //}
 
         public static AppData Modify(int appId, dynamic changes)
         {
