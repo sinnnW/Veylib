@@ -60,6 +60,8 @@ namespace Veylib.Authentication
 
         private static UserData jsonToUser(dynamic json)
         {
+            Debug.WriteLine((string)JsonConvert.SerializeObject(json));
+
             if (json.code == 200)
             {
                 var data = new UserData { State = UserVerificationState.ValidCredentials, Id = json.extra.id, Username = json.extra.username, Token = json.extra.token, Permissions = (Permissions.Flags)(int)json.extra.permissions, ApplicationId = json.extra.application_id, Disabled = (json.extra.disabled == 1 ? true : false) };
@@ -304,6 +306,14 @@ namespace Veylib.Authentication
             return json.extra.value;
         }
 
+        public static UserData ResetHWID(int userId)
+        {
+            dynamic changes = new ExpandoObject();
+            changes.hwid = null;
+
+            return Modify(userId, changes);
+        }
+
         public static partial class Permissions
         {
             [Flags]
@@ -356,16 +366,34 @@ namespace Veylib.Authentication
             }
 
             /// <summary>
+            /// Get current user's permissions
+            /// </summary>
+            /// <returns>User permissions</returns>
+            /// <exception cref="NotLoggedIn">User is not logged in</exception>
+            public static Flags Get()
+            {
+                if (CurrentUser.State != UserVerificationState.ValidCredentials)
+                    throw new NotLoggedIn();
+
+                return Get(CurrentUser.Id);
+            }
+
+            /// <summary>
             /// Set a user's permissions
             /// </summary>
             /// <param name="userId"></param>
             /// <param name="permissions"></param>
-            public static void Set(int userId, Flags[] permissions)
+            public static Flags Set(int userId, Flags permissions)
             {
+                if (CurrentUser.State != UserVerificationState.ValidCredentials)
+                    throw new NotLoggedIn();
                 if (!CurrentUser.Permissions.HasFlag(Flags.ModifyUsers))
                     throw new InvalidPermissions(Flags.ModifyUsers);
 
+                dynamic changes = new ExpandoObject();
+                changes.permissions = (int)permissions;
 
+                return (Flags)Modify(userId, changes).Permissions;
             }
         }
     }

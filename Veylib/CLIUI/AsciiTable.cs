@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace Veylib.CLIUI
 {
-    class AsciiTable
+    public class AsciiTable
     {
         public class ColorProperties
         {

@@ -134,7 +134,7 @@ namespace Veylib.CLIUI
         public MessagePropertyLabel Label;
     }
 
-    class StartupInterfaceProperties
+    public class StartupInterfaceProperties
     {
         public string Username = Environment.UserName;
         public Color UserColor = Color.FromArgb(3, 84, 204);
@@ -145,13 +145,13 @@ namespace Veylib.CLIUI
         public bool ShowNextLine = false;
     }
 
-    class StartupAuthorProperties
+    public class StartupAuthorProperties
     {
         public string Name;
         public string Url;
     }
 
-    class StartupConsoleTitleProperties
+    public class StartupConsoleTitleProperties
     {
         public bool Animated = false;
         public int AnimateDelay = 250;
@@ -159,7 +159,7 @@ namespace Veylib.CLIUI
         public string Status;
     }
 
-    class StartupProperties
+    public class StartupProperties
     {
         public StartupProperties()
         {
@@ -187,7 +187,7 @@ namespace Veylib.CLIUI
     }
 
 
-    class Core
+    public class Core
     {
         private static Core inst = null;
         public static Core GetInstance()
@@ -330,23 +330,35 @@ namespace Veylib.CLIUI
             return GetType().Assembly.GetName().Version;
         }
 
+        private string titleStatus = "";
+        public void UpdateTitleStatus(string status)
+        {
+            titleStatus = status;
+            Console.Title = $"{StartProperty.Title.Text} | {status}";
+        }
+
         // animated the title going in and out
         private void animatedTitleLoop()
         {
             // this is to start
-            Console.Title = "";
+            //Console.Title = "";
+
+            StringBuilder sb = new StringBuilder();
 
             // this will determine what way its going
             bool mode = true;
             while (true)
             {
+
                 // this is the switch for the mode, true = out, false = in
                 if (mode)
                 {
+                    sb.Clear();
                     // add each char on to the string and delay
                     foreach (var c in StartProperty.Title.Text)
                     {
-                        Console.Title += c;
+                        sb.Append(c);
+                        Console.Title = $"{sb} | {titleStatus}";
                         Thread.Sleep(StartProperty.Title.AnimateDelay);
                     }
 
@@ -357,9 +369,11 @@ namespace Veylib.CLIUI
                 else
                 {
                     // remove each char from the string and delay
-                    for (var x = Console.Title.Length; x > 0; x--)
+                    for (var x = StartProperty.Title.Text.Length; x > 0; x--)
                     {
-                        Console.Title = Console.Title.Substring(0, x - 1);
+                        string ttl = Console.Title.Substring(0, Console.Title.Length - (titleStatus.Length + 3));
+
+                        Console.Title = $"{ttl.Substring(0, x - 1)} | {titleStatus}";
                         Thread.Sleep(StartProperty.Title.AnimateDelay);
                     }
 
@@ -441,7 +455,8 @@ namespace Veylib.CLIUI
             WriteQueue.Enqueue(Properties);
 
             // invoke the event
-            ItemAddedToQueue?.Invoke(Properties);
+            lock (ItemAddedToQueue)
+                ItemAddedToQueue?.Invoke(Properties);
         }
 
         public void WriteLine(MessageProperties Properties, params object[] MessageOrColor)
@@ -658,7 +673,7 @@ namespace Veylib.CLIUI
             }
         }
 
-        public string ReadLine(string Pre = null)
+        public string ReadLine(string Pre)
         {
             while (WriteQueue.Count > 0)
                 Thread.Sleep(5);
@@ -667,10 +682,15 @@ namespace Veylib.CLIUI
                 cursorY = 0;
 
             //Console.SetCursorPosition(6 + (StartProperty.UserInformation != null ? StartProperty.UserInformation.Username.Length + StartProperty.UserInformation.Host.Length : 0), cursorY);
-
             cursorY++;
+
             Console.Write($"\r{Pre}");
             return Console.ReadLine();
+        }
+
+        public string ReadLine()
+        {
+            return ReadLine("");
         }
 
         public string ReadLineProtected(string Pre = null)
@@ -684,8 +704,21 @@ namespace Veylib.CLIUI
             {
                 var key = Console.ReadKey();
 
-                // if enter, return
-                if (key.Key == ConsoleKey.Enter)
+                if (key.Key == ConsoleKey.Backspace) // Ignore backspace
+                {
+                    if (sb.Length == 0)
+                    {
+                        Console.Write(" ");
+                        continue;
+                    }
+
+                    sb.Remove(sb.Length - 1, 1);
+                    Console.SetCursorPosition(Pre.Length + (sb.Length), cursorY);
+                    Console.Write(" ");
+                    Console.SetCursorPosition(Pre.Length + (sb.Length), cursorY);
+                    continue;
+                }
+                else if (key.Key == ConsoleKey.Enter) // Return string if finished
                 {
                     cursorY++;
                     return sb.ToString();
@@ -693,9 +726,17 @@ namespace Veylib.CLIUI
 
                 sb.Append(key.KeyChar);
 
-                Console.SetCursorPosition(sb.Length - 1, cursorY - 1);
+                Console.SetCursorPosition(Pre.Length + (sb.Length - 1), cursorY);
                 Console.Write("*");
             }
+        }
+
+        public void Delay(int ms)
+        {
+            while (WriteQueue.Count > 0)
+                Thread.Sleep(5);
+
+            Thread.Sleep(ms);
         }
     }
 }

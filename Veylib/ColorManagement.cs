@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace Veylib
 {
-    class ColorManagement
+    public class ColorManagement
     {
         private static ColorManagement inst = null;
         public static ColorManagement GetInstance()
