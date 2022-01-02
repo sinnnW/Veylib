@@ -99,7 +99,7 @@ namespace Veylib.CLIUI
                     color = (Color)param;
                 else if (param is string)
                 {
-                    ColoringGroups.Add(new object[] { color, param.ToString() });
+                    ColoringGroups.Add(new object[] { color, (string)param });
                     TextLength += param.ToString().Length;
                 }
             }
@@ -388,7 +388,7 @@ namespace Veylib.CLIUI
         {
             if (StartProperty.LogoString != null)
                 foreach (var line in StartProperty.LogoString.Split('\n'))
-                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, line.Replace("\r", string.Empty));
+                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, line);//.Replace("\r", string.Empty));
 
             // attributions
             if (StartProperty.Author.Name != null)
@@ -451,16 +451,28 @@ namespace Veylib.CLIUI
         {
             if (Properties == null)
                 Properties = new MessageProperties(StartProperty.ColorRotation);
-            Properties.Parse(MessageOrColor);
+            if (MessageOrColor != null)
+                Properties.Parse(MessageOrColor);
+
             WriteQueue.Enqueue(Properties);
 
             // invoke the event
-            lock (ItemAddedToQueue)
+            //lock (ItemAddedToQueue)
                 ItemAddedToQueue?.Invoke(Properties);
         }
 
         public void WriteLine(MessageProperties Properties, params object[] MessageOrColor)
         {
+            //int fail = 0;
+            //foreach (var grp in Properties.ColoringGroups)
+            //{
+            //    if (grp[1] == null || (string)grp[1] == "")
+            //        fail++;
+            //}
+
+            //if (fail == Properties.ColoringGroups.Count)
+            //    return;
+
             ParseWrite(MessageOrColor, Properties);
         }
 

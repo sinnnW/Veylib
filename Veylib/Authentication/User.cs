@@ -137,9 +137,11 @@ namespace Veylib.Authentication
             // Always add HWID header
             req.Headers.Add("HWID", Shared.HWID);
 
-            byte[] body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new verifyPayload(Username, Password)));
-
-            req.GetRequestStream().Write(body, 0, body.Length);
+            if (AuthToken == null)
+            {
+                byte[] body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new verifyPayload(Username, Password)));
+                req.GetRequestStream().Write(body, 0, body.Length);
+            }
 
             var resp = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
             var json = JsonConvert.DeserializeObject<dynamic>(resp);
