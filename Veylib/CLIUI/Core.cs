@@ -92,6 +92,8 @@ namespace Veylib.CLIUI
                     color = Color.FromArgb(200, 200, 200);
                 else if (param is string && param.ToString().StartsWith("#") && param.ToString().Length == 7)
                 {
+                    //if ((string)param == "rainbow")
+                    //    color 
                     int argb = int.Parse(param.ToString().Substring(1), System.Globalization.NumberStyles.HexNumber);
                     color = Color.FromArgb(argb);
                 }

@@ -272,7 +272,7 @@ namespace Veylib.CLIUI
                 if ((Columns.Count - row.Cells.Count) > 0)
                 {
                     for (var x = 0; x < Columns.Count - row.Cells.Count; x++)
-                        strb.Append($"{new string(' ', colWidth - 2)}");
+                        strb.Append($"{new string(' ', colWidth - 3)}");
                     //strb.Remove(strb.Length - 2, 2);
 
                     cellsFormatted.Add(strb.ToString());
