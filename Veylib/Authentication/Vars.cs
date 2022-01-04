@@ -75,8 +75,8 @@ namespace Veylib.Authentication
         /// <returns>The variable</returns>
         public static VarData Get(string key)
         {
-            if (User.CurrentUser.State != User.UserVerificationState.ValidCredentials)
-                throw new User.NotLoggedIn();
+            //if (User.CurrentUser.State != User.UserVerificationState.ValidCredentials)
+            //    throw new User.NotLoggedIn();
 
             return Get(key, User.CurrentUser.Id);
         }

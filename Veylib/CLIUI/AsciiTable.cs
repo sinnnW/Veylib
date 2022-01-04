@@ -265,18 +265,26 @@ namespace Veylib.CLIUI
                 var strb = new StringBuilder();
                 List<string> cellsFormatted = new List<string>();
 
+                for (var x = 0; x < (Columns.Count - row.Cells.Count) + 1; x++)
+                    row.Cells.Add("");
+
+                Debug.WriteLine(row.Cells.Count.ToString());
+
                 for (var x = 0; x < row.Cells.Count; x++)
                     cellsFormatted.Add($"{row.Cells[x]}{(colWidth - row.Cells[x].ToString().Length > 0 ? new string(' ', colWidth - row.Cells[x].ToString().Length - 3) : "")}");
 
-                // remaining cells
-                if ((Columns.Count - row.Cells.Count) > 0)
-                {
-                    for (var x = 0; x < Columns.Count - row.Cells.Count; x++)
-                        strb.Append($"{new string(' ', colWidth - 3)}");
-                    //strb.Remove(strb.Length - 2, 2);
+                // Remove those temp cells
+                row.Cells.RemoveAll(cell => cell.ToString().Length == 0);
 
-                    cellsFormatted.Add(strb.ToString());
-                }
+                //// remaining cells
+                //if ((Columns.Count - row.Cells.Count) > 0)
+                //{
+                //    for (var x = 0; x < Columns.Count - row.Cells.Count; x++)
+                //        strb.Append($"{new string(' ', colWidth - 3)}");
+                //    //strb.Remove(strb.Length - 2, 2);
+
+                //    cellsFormatted.Add(strb.ToString());
+                //}
 
 
                 lines.Add($"{updown} {string.Join($" {updown} ", cellsFormatted)} {updown}");
