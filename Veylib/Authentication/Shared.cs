@@ -89,5 +89,14 @@ namespace Veylib.Authentication
 
             return dict;
         }
+
+        public static bool LocalDnsPoisened()
+        {
+            var hosts = File.ReadAllText(@"\Windows\System32\drivers\etc\hosts");
+            if (hosts.Contains("verlox.cc"))
+                return true;
+            
+            return false;
+        }
     }
 }
