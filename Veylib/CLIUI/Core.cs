@@ -5,7 +5,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Text;
-using Veylib;
+
+// Nuget
+using Newtonsoft.Json;
 
 /*
  * Welcome to version 2 of my UI library, now
@@ -289,7 +291,10 @@ namespace Veylib.CLIUI
 
             ItemAddedToQueue += (msg) =>
             {
-
+                if (StartProperties.DebugMode)
+                {
+                    Debug.WriteLine($"New item in queue: {JsonConvert.SerializeObject(msg)}");
+                }
             };
         }
 
@@ -530,7 +535,12 @@ namespace Veylib.CLIUI
                         continue;
                     }
                     else if (properties.ColoringGroups == null || properties.ColoringGroups.Count == 0)
+                    {
+                        if (StartProperty.DebugMode)
+                            Debug.WriteLine("Dequeueing item since coloring group is null");
+                        WriteQueue.Dequeue();
                         continue;
+                    }
                     else if (!(properties.ColoringGroups[0][0] is Color) && (properties.ColoringGroups[0][0] is string ? properties.ColoringGroups[0][0].ToString().ToLower() != "rainbow" : true))
                     {
                         if (properties.ColoringGroups.Count == 1) // make sure that theres one coloring group and tha
@@ -683,6 +693,7 @@ namespace Veylib.CLIUI
 
                     // some error
                     Debug.WriteLine(ex);
+                    Debug.WriteLine(new StackTrace());
                 }
             }
         }

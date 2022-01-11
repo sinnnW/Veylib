@@ -230,7 +230,7 @@ namespace Veylib.CLIUI
             // set the table width
             foreach (var col in Columns)
                 if (col.Header.Length > colWidth)
-                    colWidth = col.Header.Length + 3;
+                    colWidth = col.Header.Length + 4;
 
             foreach (var row in Rows)
                 foreach (var cell in row.Cells)
@@ -251,7 +251,10 @@ namespace Veylib.CLIUI
             // columns
             List<string> cols = new List<string>();
             foreach (var col in Columns)
-                cols.Add($"{col.Header}{new string(' ', colWidth - col.Header.Length - 3)}");
+            {
+                int len = colWidth - col.Header.Length - 3;
+                cols.Add(len > 0 ? $"{col.Header}{new string(' ', len)}" : col.Header);
+            }
 
             // add the actual columns
             lines.Add($"{updown} {string.Join($" {updown} ", cols)} {updown}");
@@ -265,8 +268,9 @@ namespace Veylib.CLIUI
                 var strb = new StringBuilder();
                 List<string> cellsFormatted = new List<string>();
 
-                for (var x = 0; x < (Columns.Count - row.Cells.Count) + 1; x++)
-                    row.Cells.Add("");
+                if (row.Cells.Count < Columns.Count)
+                    for (var x = 0; x < (Columns.Count - row.Cells.Count) + 1; x++)
+                        row.Cells.Add(" ");
 
                 Debug.WriteLine(row.Cells.Count.ToString());
 
@@ -299,6 +303,8 @@ namespace Veylib.CLIUI
 
             // bottom
             lines.Add(build.bottomLine(Columns));
+
+            Debug.WriteLine(string.Join("\n", lines));
 
             return string.Join("\n", lines);
         }
