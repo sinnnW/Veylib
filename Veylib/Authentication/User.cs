@@ -25,6 +25,7 @@ namespace Veylib.Authentication
             public Permissions.Flags Permissions;
             public int ApplicationId;
             public bool Disabled;
+            //public string DisableReason;
 
             public override string ToString()
             {
