@@ -321,13 +321,13 @@ namespace Veylib.CLIUI
             {
                 if (x == 0 || x == lines.Length - 1 || lines[x].StartsWith(updownright.ToString()))
                     if (Property.Colors.RainbowDividers)
-                        core.WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, VerticalRainbow = true, Center = true }, lines[x]);
+                        core.WriteLine(new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, VerticalRainbow = true, Center = true }, lines[x]);
                     else
-                        core.WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, Center = true }, Property.Colors.PipeColor, lines[x]);
+                        core.WriteLine(new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, Center = true }, Property.Colors.PipeColor, lines[x]);
                 else if (lines[x].StartsWith(updown.ToString()))
                 {
                     StringBuilder sb = new StringBuilder();
-                    MessageProperties mp = new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, Center = true };
+                    Core.MessageProperties mp = new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, Center = true };
                     for (var y = 0; y < lines[x].Length; y++)
                     {
                         if (lines[x][y] == updown)
@@ -349,7 +349,7 @@ namespace Veylib.CLIUI
                     core.WriteLine(mp);
                 }
                 else
-                    core.WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, Center = true }, lines[x]);
+                    core.WriteLine(new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, Center = true }, lines[x]);
             }
         }
     }

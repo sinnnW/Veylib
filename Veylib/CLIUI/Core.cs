@@ -21,178 +21,176 @@ using Newtonsoft.Json;
 
 namespace Veylib.CLIUI
 {
-    public class MessagePropertyTime
-    {
-        public void UpdateColor()
-        {
-            ColorManagement.GetInstance().HsvToRgb(Core.StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
-            Color = Color.FromArgb(r, g, b);
-        }
-
-        public bool Show = true;
-        public string Text = DateTime.Now.ToString("HH:mm:ss.ff");
-        public Color Color;
-    }
-
-    public class MessagePropertyLabel
-    {
-        // dictionary for printing and auto prefixing
-        private readonly Dictionary<string, dynamic[]> WordToColorDict = new Dictionary<string, object[]>()
-        {
-            { "ok", new dynamic[] { Color.FromArgb(0, 255, 0), "  ok  " } },
-            { "success", new dynamic[] { Color.FromArgb(0, 255, 0), "  ok  " } },
-            { "work", new dynamic[] { Color.Yellow, " work " } },
-            { "working", new dynamic[] { Color.Yellow, " work " } },
-            { "fail", new dynamic[] { Color.Red, " fail " } },
-            { "failure", new dynamic[] { Color.Red, " fail " } },
-            { "info", new dynamic[] { Color.Cyan, " info "} },
-            { "general", new dynamic[] { Color.Cyan, " info "} },
-            { "none", new dynamic[] { Color.Cyan, " info "} },
-            { "skip", new dynamic[] { Color.Yellow, " skip "} },
-            { "conf", new dynamic[] { Color.DarkCyan, " conf " } },
-            { "help", new dynamic[] { Color.DarkGreen, " help " } },
-        };
-
-        public MessagePropertyLabel()
-        {
-            ColorManagement.GetInstance().HsvToRgb(Core.StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
-            Color = Color.FromArgb(r, g, b);
-
-            // set other values
-            WordToColorDict.TryGetValue("info", out object[] val);
-            Color = (Color)val[0];
-            Text = val[1].ToString().ToUpper();
-        }
-
-        public void AutoFormat()
-        {
-            WordToColorDict.TryGetValue(Text.ToLower(), out object[] val);
-
-            // make sure its not null
-            if (val == null)
-                return;
-
-            Color = (Color)val[0];
-            Text = val[1].ToString().ToUpper();
-        }
-
-        public bool Show = true;
-        public string Text;
-        public Color Color;
-    }
-
-    public class MessageProperties
-    {
-        public void Parse(object[] MessageOrColor)
-        {
-            // color var and fallback
-            var color = Color.FromArgb(200, 200, 200);
-
-            foreach (var param in MessageOrColor)
-            {
-                if (param == null)
-                    color = Color.FromArgb(200, 200, 200);
-                else if (param is string && param.ToString().StartsWith("#") && param.ToString().Length == 7)
-                {
-                    //if ((string)param == "rainbow")
-                    //    color 
-                    int argb = int.Parse(param.ToString().Substring(1), System.Globalization.NumberStyles.HexNumber);
-                    color = Color.FromArgb(argb);
-                }
-                else if (param is Color)
-                    color = (Color)param;
-                else if (param is string)
-                {
-                    ColoringGroups.Add(new object[] { color, (string)param });
-                    TextLength += param.ToString().Length;
-                }
-            }
-
-            // format the label
-            if (Label != null)
-                Label.AutoFormat();
-        }
-
-        public MessageProperties(params object[] MessageOrColor)
-        {
-            Parse(MessageOrColor);
-
-            // setup the nested classes
-            Time = new MessagePropertyTime();
-            Label = new MessagePropertyLabel();
-        }
-
-        public List<object[]> ColoringGroups = new List<object[]>();
-        public bool WordWrap = true;
-
-        // coloring
-        public bool HorizontalRainbow = false;
-        public bool VerticalRainbow = false;
-
-        public bool ShowHeaderAfter = false;
-        public bool Center = false;
-
-        public int TextLength = 0;
-
-        public MessagePropertyTime Time;
-        public MessagePropertyLabel Label;
-    }
-
-    public class StartupInterfaceProperties
-    {
-        public string Username = Environment.UserName;
-        public Color UserColor = Color.FromArgb(3, 84, 204);
-
-        public string Host = Environment.MachineName;
-        public Color HostColor = Color.FromArgb(100, 7, 247);
-
-        public bool ShowNextLine = false;
-    }
-
-    public class StartupAuthorProperties
-    {
-        public string Name;
-        public string Url;
-    }
-
-    public class StartupConsoleTitleProperties
-    {
-        public bool Animated = false;
-        public int AnimateDelay = 250;
-        public string Text = Console.Title;
-        public string Status;
-    }
-
-    public class StartupProperties
-    {
-        public StartupProperties()
-        {
-            Title = new StartupConsoleTitleProperties();
-            Author = new StartupAuthorProperties();
-            UserInformation = new StartupInterfaceProperties();
-        }
-
-
-        public StartupConsoleTitleProperties Title;
-        public StartupAuthorProperties Author;
-        public StartupInterfaceProperties UserInformation;
-
-        public string LogoString;
-        public string Version = null;
-        public string MOTD;
-
-        public bool SilentStart = false;
-        public bool AutoSize = true;
-        public bool UseAutoVersioning = false;
-        public bool DebugMode = false;
-
-        public int ColorRotation = 0;
-        public int ColorRotationOffset = 5;
-    }
-
-
     public class Core
     {
+        public class MessagePropertyTime
+        {
+            public void UpdateColor()
+            {
+                ColorManagement.GetInstance().HsvToRgb(Core.StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
+                Color = Color.FromArgb(r, g, b);
+            }
+
+            public bool Show = true;
+            public string Text = DateTime.Now.ToString("HH:mm:ss.ff");
+            public Color Color;
+        }
+
+        public class MessagePropertyLabel
+        {
+            // dictionary for printing and auto prefixing
+            private readonly Dictionary<string, dynamic[]> WordToColorDict = new Dictionary<string, object[]>()
+            {
+                { "ok", new dynamic[] { Color.FromArgb(0, 255, 0), "  ok  " } },
+                { "success", new dynamic[] { Color.FromArgb(0, 255, 0), "  ok  " } },
+                { "work", new dynamic[] { Color.Yellow, " work " } },
+                { "working", new dynamic[] { Color.Yellow, " work " } },
+                { "fail", new dynamic[] { Color.Red, " fail " } },
+                { "failure", new dynamic[] { Color.Red, " fail " } },
+                { "info", new dynamic[] { Color.Cyan, " info "} },
+                { "general", new dynamic[] { Color.Cyan, " info "} },
+                { "none", new dynamic[] { Color.Cyan, " info "} },
+                { "skip", new dynamic[] { Color.Yellow, " skip "} },
+                { "conf", new dynamic[] { Color.DarkCyan, " conf " } },
+                { "help", new dynamic[] { Color.DarkGreen, " help " } },
+            };
+
+            public MessagePropertyLabel()
+            {
+                ColorManagement.GetInstance().HsvToRgb(Core.StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
+                Color = Color.FromArgb(r, g, b);
+
+                // set other values
+                WordToColorDict.TryGetValue("info", out object[] val);
+                Color = (Color)val[0];
+                Text = val[1].ToString().ToUpper();
+            }
+
+            public void AutoFormat()
+            {
+                WordToColorDict.TryGetValue(Text.ToLower(), out object[] val);
+
+                // make sure its not null
+                if (val == null)
+                    return;
+
+                Color = (Color)val[0];
+                Text = val[1].ToString().ToUpper();
+            }
+
+            public bool Show = true;
+            public string Text;
+            public Color Color;
+        }
+
+        public class MessageProperties
+        {
+            public void Parse(object[] MessageOrColor)
+            {
+                // color var and fallback
+                var color = Color.FromArgb(200, 200, 200);
+
+                foreach (var param in MessageOrColor)
+                {
+                    if (param == null)
+                        color = Color.FromArgb(200, 200, 200);
+                    else if (param is string && param.ToString().StartsWith("#") && param.ToString().Length == 7)
+                    {
+                        //if ((string)param == "rainbow")
+                        //    color 
+                        int argb = int.Parse(param.ToString().Substring(1), System.Globalization.NumberStyles.HexNumber);
+                        color = Color.FromArgb(argb);
+                    }
+                    else if (param is Color)
+                        color = (Color)param;
+                    else if (param is string)
+                    {
+                        ColoringGroups.Add(new object[] { color, (string)param });
+                        TextLength += param.ToString().Length;
+                    }
+                }
+
+                // format the label
+                if (Label != null)
+                    Label.AutoFormat();
+            }
+
+            public MessageProperties(params object[] MessageOrColor)
+            {
+                Parse(MessageOrColor);
+
+                // setup the nested classes
+                Time = new MessagePropertyTime();
+                Label = new MessagePropertyLabel();
+            }
+
+            public List<object[]> ColoringGroups = new List<object[]>();
+            public bool WordWrap = true;
+
+            // coloring
+            public bool HorizontalRainbow = false;
+            public bool VerticalRainbow = false;
+
+            public bool ShowHeaderAfter = false;
+            public bool Center = false;
+
+            public int TextLength = 0;
+
+            public MessagePropertyTime Time;
+            public MessagePropertyLabel Label;
+        }
+
+        public class StartupInterfaceProperties
+        {
+            public string Username = Environment.UserName;
+            public Color UserColor = Color.FromArgb(3, 84, 204);
+
+            public string Host = Environment.MachineName;
+            public Color HostColor = Color.FromArgb(100, 7, 247);
+
+            public bool ShowNextLine = false;
+        }
+
+        public class StartupAuthorProperties
+        {
+            public string Name;
+            public string Url;
+        }
+
+        public class StartupConsoleTitleProperties
+        {
+            public bool Animated = false;
+            public int AnimateDelay = 250;
+            public string Text = Console.Title;
+            public string Status;
+        }
+
+        public class StartupProperties
+        {
+            public StartupProperties()
+            {
+                Title = new StartupConsoleTitleProperties();
+                Author = new StartupAuthorProperties();
+                UserInformation = new StartupInterfaceProperties();
+            }
+
+
+            public StartupConsoleTitleProperties Title;
+            public StartupAuthorProperties Author;
+            public StartupInterfaceProperties UserInformation;
+
+            public string LogoString;
+            public string Version = null;
+            public string MOTD;
+
+            public bool SilentStart = false;
+            public bool AutoSize = true;
+            public bool UseAutoVersioning = false;
+            public bool DebugMode = false;
+
+            public int ColorRotation = 0;
+            public int ColorRotationOffset = 5;
+        }
         private static Core inst = null;
         public static Core GetInstance()
         {
