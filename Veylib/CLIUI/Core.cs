@@ -92,22 +92,26 @@ namespace Veylib.CLIUI
 
                 foreach (var param in MessageOrColor)
                 {
-                    if (param == null)
-                        color = Color.FromArgb(200, 200, 200);
-                    else if (param is string && param.ToString().StartsWith("#") && param.ToString().Length == 7)
+                    try
                     {
-                        //if ((string)param == "rainbow")
-                        //    color 
-                        int argb = int.Parse(param.ToString().Substring(1), System.Globalization.NumberStyles.HexNumber);
-                        color = Color.FromArgb(argb);
+                        if (param == null)
+                            color = Color.FromArgb(200, 200, 200);
+                        else if (param is string && param.ToString().StartsWith("#") && param.ToString().Length == 7)
+                        {
+                            //if ((string)param == "rainbow")
+                            //    color 
+                            int argb = int.Parse(param.ToString().Substring(1), System.Globalization.NumberStyles.HexNumber);
+                            color = Color.FromArgb(argb);
+                        }
+                        else if (param is Color)
+                            color = (Color)param;
+                        else if (param is string)
+                        {
+                            ColoringGroups.Add(new object[] { color, (string)param });
+                            TextLength += param.ToString().Length;
+                        }
                     }
-                    else if (param is Color)
-                        color = (Color)param;
-                    else if (param is string)
-                    {
-                        ColoringGroups.Add(new object[] { color, (string)param });
-                        TextLength += param.ToString().Length;
-                    }
+                    catch { }
                 }
 
                 // format the label
@@ -463,21 +467,11 @@ namespace Veylib.CLIUI
 
             // invoke the event
             //lock (ItemAddedToQueue)
-                ItemAddedToQueue?.Invoke(Properties);
+            //    ItemAddedToQueue?.Invoke(Properties);
         }
 
         public void WriteLine(MessageProperties Properties, params object[] MessageOrColor)
         {
-            //int fail = 0;
-            //foreach (var grp in Properties.ColoringGroups)
-            //{
-            //    if (grp[1] == null || (string)grp[1] == "")
-            //        fail++;
-            //}
-
-            //if (fail == Properties.ColoringGroups.Count)
-            //    return;
-
             ParseWrite(MessageOrColor, Properties);
         }
 
@@ -510,6 +504,7 @@ namespace Veylib.CLIUI
                 // wrap in try so nothin breaks too badly
                 try
                 {
+                    //Debug.WriteLine($"Running loop : {WriteQueue.Count} work left");
                     // make sure theres work to do
                     if (WriteQueue.Count == 0)
                         continue;
