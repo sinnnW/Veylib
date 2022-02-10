@@ -518,7 +518,7 @@ namespace Veylib.CLIUI
                     if (properties == null)
                     {
                         WriteQueue.Dequeue();
-                        return;
+                        continue;
                     }
 
                     if (properties.ShowHeaderAfter && properties.ColoringGroups != null && properties.ColoringGroups.Count == 0)
