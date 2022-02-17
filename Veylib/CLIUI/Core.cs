@@ -220,6 +220,7 @@ namespace Veylib.CLIUI
 
         private static int cursorY = 0;
         private static int colorRotationStart = 0;
+        private Thread workThread;
 
         // delegates
         public delegate void _noReturn();
@@ -286,7 +287,8 @@ namespace Veylib.CLIUI
                 WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "work" } }, "Starting work loop thread");
 
             // start the writeloop
-            new Thread(workLoop).Start();
+            workThread = new Thread(workLoop);
+            workThread.Start();
 
             if (!StartProperties.SilentStart)
                 WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "ok" } }, "Work thread started");
@@ -303,6 +305,13 @@ namespace Veylib.CLIUI
         bool prevTog;
         public void Clear()
         {
+            if (WriteQueue.Count > 0)
+                WriteQueue.Clear();
+
+            // Abort write thread
+            if (workThread != null && workThread.IsAlive)
+                workThread.Abort();
+
             prevTog = StartProperty.UserInformation.ShowNextLine;
             if (prevTog)
                 StartProperty.UserInformation.ShowNextLine = false;
@@ -314,6 +323,12 @@ namespace Veylib.CLIUI
 
             // print the logo
             PrintLogo();
+
+            if (workThread != null && !workThread.IsAlive)
+            {
+                workThread = new Thread(workLoop);
+                workThread.Start();
+            }
 
             // trigger event
             OnClear?.Invoke();
@@ -666,7 +681,8 @@ namespace Veylib.CLIUI
                     Console.WriteLine();
                     Console.ResetColor();
 
-                    WriteQueue.Dequeue();
+                    if (WriteQueue.Count > 0)
+                        WriteQueue.Dequeue();
 
                     if (WriteQueue.Count == 0)
                         QueueCleared?.Invoke();
@@ -682,7 +698,8 @@ namespace Veylib.CLIUI
                 }
                 catch (Exception ex)
                 {
-                    WriteQueue.Dequeue();
+                    if (WriteQueue.Count > 0)
+                        WriteQueue.Dequeue();
 
                     // some error
                     Debug.WriteLine(ex);
