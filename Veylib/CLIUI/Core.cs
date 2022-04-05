@@ -23,6 +23,34 @@ namespace Veylib.CLIUI
 {
     public class Core
     {
+        public static class Formatting
+        {
+            public static string Reset = "\x1B[0m";
+            public static string Underline = "\x1B[4m";
+
+            public static string CreateDivider()
+            {
+                return new string('=', (int)Math.Round(Console.BufferWidth / 1.25));
+            }
+
+            public static string CreateDivider(string Title)
+            {
+                var str = CreateDivider();
+                var half = str.Substring(0, (int)Math.Round((decimal)str.Length / 2));
+                return $"{half} {Title} {half}";
+            }
+
+            public static string Center(string Input)
+            {
+                return $"{new string(' ', (Console.BufferWidth / 2) - (Input.Length / 2))}{Input}";
+            }
+
+            public static string Space(string Input, int Length)
+            {
+                return $"{Input}{new string(' ', (Length - Input.Length > 0 ? Length - Input.Length : 0))}";
+            }
+        }
+
         public class MessagePropertyTime
         {
             public void UpdateColor()
@@ -137,8 +165,10 @@ namespace Veylib.CLIUI
 
             public bool ShowHeaderAfter = false;
             public bool Center = false;
+            public bool BypassLock = false;
 
             public int TextLength = 0;
+            public int? YCood = null;
 
             public MessagePropertyTime Time;
             public MessagePropertyLabel Label;
@@ -217,10 +247,15 @@ namespace Veylib.CLIUI
         // if this is true, it will pause printing
         public static bool PauseConsole = false;
         public static bool HeaderPrintedLast = false;
+        public static bool newItemLock = false;
 
         private static int cursorY = 0;
         private static int colorRotationStart = 0;
         private Thread workThread;
+
+        public static int CursorY {
+            get => cursorY;
+        }
 
         // delegates
         public delegate void _noReturn();
@@ -436,8 +471,7 @@ namespace Veylib.CLIUI
 
         public void PrintMOTD()
         {
-            Formatting form = Formatting.GetInstance();
-            string div = form.CreateDivider();
+            string div = Formatting.CreateDivider();
             string divHalf = div.Substring(0, (int)Math.Round((decimal)div.Length / 2));
 
             WriteLine(new MessageProperties { HorizontalRainbow = true, Label = null, Time = null, Center = true }, $"{divHalf} MOTD {divHalf}");
@@ -456,8 +490,7 @@ namespace Veylib.CLIUI
 
         public void CreateAlert(string Title, Color Divider, params string[] Lines)
         {
-            Formatting form = Formatting.GetInstance();
-            string div = form.CreateDivider();
+            string div = Formatting.CreateDivider();
             string divHalf = div.Substring(0, (int)Math.Round((decimal)div.Length / 2));
 
             WriteLine(new MessageProperties { Label = null, Time = null, Center = true }, Divider, $"{divHalf} {Title} {divHalf}");
@@ -471,38 +504,47 @@ namespace Veylib.CLIUI
             WriteLine();
         }
 
-        private void ParseWrite(object[] MessageOrColor, MessageProperties Properties = null)
+        private void ParseWrite(object[] messageOrColor, MessageProperties properties = null)
         {
-            if (Properties == null)
-                Properties = new MessageProperties(StartProperty.ColorRotation);
-            if (MessageOrColor != null)
-                Properties.Parse(MessageOrColor);
+            if (properties == null)
+                properties = new MessageProperties(StartProperty.ColorRotation);
+            if (messageOrColor != null)
+                properties.Parse(messageOrColor);
 
-            WriteQueue.Enqueue(Properties);
+            while (newItemLock && !properties.BypassLock)
+                Thread.Sleep(100);
+
+            WriteQueue.Enqueue(properties);
 
             // invoke the event
             //lock (ItemAddedToQueue)
             //    ItemAddedToQueue?.Invoke(Properties);
         }
 
-        public void WriteLine(MessageProperties Properties, params object[] MessageOrColor)
+        public void WriteLine(MessageProperties properties, params object[] messageOrColor)
         {
-            ParseWrite(MessageOrColor, Properties);
+            ParseWrite(messageOrColor, properties);
         }
 
-        public void WriteLine(params object[] MessageOrColor)
+        public void WriteLine(params object[] messageOrColor)
         {
-            ParseWrite(MessageOrColor);
+            ParseWrite(messageOrColor);
         }
 
-        public void WriteLine(MessageProperties Properties)
+        public void WriteLine(MessageProperties properties)
         {
-            if (Properties.ColoringGroups != null)
-                WriteQueue.Enqueue(Properties);
+            while (newItemLock && !properties.BypassLock)
+                Thread.Sleep(100);
+
+            if (properties.ColoringGroups != null)
+                WriteQueue.Enqueue(properties);
         }
 
         public void WriteLine()
         {
+            while (newItemLock)
+                Thread.Sleep(100);
+
             WriteQueue.Enqueue(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, ColoringGroups = new List<object[]> { new object[] { null } } });
         }
 
@@ -579,7 +621,10 @@ namespace Veylib.CLIUI
 
 
                     // set cursor position
-                    Console.SetCursorPosition(0, cursorY);
+                    if (properties.YCood == null)
+                        Console.SetCursorPosition(0, cursorY);
+                    else
+                        Console.SetCursorPosition(0, properties.YCood ?? 0);
 
                     // write the time
                     if (properties.Time != null && properties.Time.Show)
@@ -661,7 +706,7 @@ namespace Veylib.CLIUI
                         total += properties.Time.Text.Length + 3;
 
                     //cursorY += (int)Math.Floor((decimal)((total + properties.TextLength) / Console.BufferWidth)) + 1;
-                    cursorY++;
+                        cursorY++;
 
                     // write the label
                     if (properties.Label != null && properties.Label.Show)
