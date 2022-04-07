@@ -249,13 +249,9 @@ namespace Veylib.CLIUI
         public static bool HeaderPrintedLast = false;
         public static bool newItemLock = false;
 
-        private static int cursorY = 0;
+        public static int CursorY = 0;
         private static int colorRotationStart = 0;
         private Thread workThread;
-
-        public static int CursorY {
-            get => cursorY;
-        }
 
         // delegates
         public delegate void _noReturn();
@@ -354,7 +350,7 @@ namespace Veylib.CLIUI
             StartProperty.ColorRotation = colorRotationStart;
 
             Console.Clear();
-            cursorY = 0; // reset the console Y
+            CursorY = 0; // reset the console Y
 
             // print the logo
             PrintLogo();
@@ -594,7 +590,7 @@ namespace Veylib.CLIUI
                     else if (!(properties.ColoringGroups[0][0] is Color) && (properties.ColoringGroups[0][0] is string ? properties.ColoringGroups[0][0].ToString().ToLower() != "rainbow" : true))
                     {
                         if (properties.ColoringGroups.Count == 1) // make sure that theres one coloring group and tha
-                            cursorY++;
+                            CursorY++;
 
                         Console.WriteLine();
                         WriteQueue.Dequeue();
@@ -609,20 +605,20 @@ namespace Veylib.CLIUI
                         StartProperty.ColorRotation = 0;
 
                     // check if its too long, if no check, this will cause a buffer overflow.
-                    if (cursorY >= Console.BufferHeight)
+                    if (CursorY >= Console.BufferHeight)
                     {
                         Clear();
-                        cursorY = 0;
+                        CursorY = 0;
                     }
 
                     // if the header was the last thing printed, bump one char down.
                     //if (HeaderPrintedLast)
-                    //    cursorY++;
+                    //    CursorY++;
 
 
                     // set cursor position
                     if (properties.YCood == null)
-                        Console.SetCursorPosition(0, cursorY);
+                        Console.SetCursorPosition(0, CursorY);
                     else
                         Console.SetCursorPosition(0, properties.YCood ?? 0);
 
@@ -705,8 +701,8 @@ namespace Veylib.CLIUI
                     if (properties.Time != null && properties.Time.Show)
                         total += properties.Time.Text.Length + 3;
 
-                    //cursorY += (int)Math.Floor((decimal)((total + properties.TextLength) / Console.BufferWidth)) + 1;
-                        cursorY++;
+                    //CursorY += (int)Math.Floor((decimal)((total + properties.TextLength) / Console.BufferWidth)) + 1;
+                        CursorY++;
 
                     // write the label
                     if (properties.Label != null && properties.Label.Show)
@@ -758,11 +754,11 @@ namespace Veylib.CLIUI
             while (WriteQueue.Count > 0)
                 Thread.Sleep(5);
 
-            if (cursorY < 0)
-                cursorY = 0;
+            if (CursorY < 0)
+                CursorY = 0;
 
-            //Console.SetCursorPosition(6 + (StartProperty.UserInformation != null ? StartProperty.UserInformation.Username.Length + StartProperty.UserInformation.Host.Length : 0), cursorY);
-            cursorY++;
+            //Console.SetCursorPosition(6 + (StartProperty.UserInformation != null ? StartProperty.UserInformation.Username.Length + StartProperty.UserInformation.Host.Length : 0), CursorY);
+            CursorY++;
 
             Console.Write($"\r{Pre}");
             return Console.ReadLine();
@@ -793,20 +789,20 @@ namespace Veylib.CLIUI
                     }
 
                     sb.Remove(sb.Length - 1, 1);
-                    Console.SetCursorPosition(Pre.Length + (sb.Length), cursorY);
+                    Console.SetCursorPosition(Pre.Length + (sb.Length), CursorY);
                     Console.Write(" ");
-                    Console.SetCursorPosition(Pre.Length + (sb.Length), cursorY);
+                    Console.SetCursorPosition(Pre.Length + (sb.Length), CursorY);
                     continue;
                 }
                 else if (key.Key == ConsoleKey.Enter) // Return string if finished
                 {
-                    cursorY++;
+                    CursorY++;
                     return sb.ToString();
                 }
 
                 sb.Append(key.KeyChar);
 
-                Console.SetCursorPosition(Pre.Length + (sb.Length - 1), cursorY);
+                Console.SetCursorPosition(Pre.Length + (sb.Length - 1), CursorY);
                 Console.Write("*");
             }
         }
