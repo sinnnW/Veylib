@@ -12,11 +12,15 @@ namespace Veylib.CLIUI
     {
         private Core core = Core.GetInstance();
         private int renderCount = 0;
+        private int hue;
+        private int curY;
 
         public List<string> Options = new List<string>();
         public int Index = 0;
         public SelectionMenu(params string[] opts)
         {
+            hue = Core.StartProperty.ColorRotation;
+            curY = Core.CursorY + opts.Length + 1;
             foreach (var opt in opts)
                 Options.Add(opt);
         }
@@ -44,6 +48,8 @@ namespace Veylib.CLIUI
                         var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - (Options.Count * renderCount) + Index };
                         core.WriteLine(props, "> ", Color.Lime, Core.Formatting.Underline, Options[Index]);
 
+                        Core.StartProperty.ColorRotation = hue;
+                        Core.CursorY = curY;
                         Core.newItemLock = false;
                         Console.CursorVisible = cursorVisible;
                         return Options[Index];
