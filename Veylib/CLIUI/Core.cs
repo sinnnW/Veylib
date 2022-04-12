@@ -217,7 +217,7 @@ namespace Veylib.CLIUI
             public string Version = null;
             public string MOTD;
 
-            public bool SilentStart = false;
+            public bool SilentStart = true;
             public bool AutoSize = true;
             public bool UseAutoVersioning = false;
             public bool DebugMode = false;
@@ -225,6 +225,7 @@ namespace Veylib.CLIUI
             public int ColorRotation = 0;
             public int ColorRotationOffset = 5;
         }
+
         private static Core inst = null;
         public static Core GetInstance()
         {
@@ -241,8 +242,8 @@ namespace Veylib.CLIUI
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr GetStdHandle(int nStdHandle);
 
-        public static Queue<MessageProperties> WriteQueue = new Queue<MessageProperties>();
-        public static StartupProperties StartProperty;
+        public static Queue<MessageProperties> WriteQueue;
+        public static StartupProperties StartProperty = null;
 
         // if this is true, it will pause printing
         public static bool PauseConsole = false;
@@ -263,12 +264,16 @@ namespace Veylib.CLIUI
         public static event _workItem ItemAddedToQueue;
         public static event _workItem ItemFinished;
 
-        public void Start(StartupProperties StartProperties)
+        public void Start(StartupProperties startProperties = null)
         {
             Console.Clear();
+            Debug.WriteLine("STARTING...");
 
-            StartProperty = StartProperties;
-            colorRotationStart = StartProperties.ColorRotation;
+            StartProperty = startProperties == null ? new StartupProperties() : startProperties;
+            WriteQueue = new Queue<MessageProperties>();
+            colorRotationStart = StartProperty.ColorRotation;
+
+            Debug.WriteLine("queue");
 
             // set the console mode to support colors
             var Handle = GetStdHandle(-11);
@@ -277,60 +282,60 @@ namespace Veylib.CLIUI
             SetConsoleMode(Handle, Mode | 0x4);
 
             // autoversion
-            if (StartProperties.UseAutoVersioning)
-                StartProperties.Version = GetAutoVersion().ToString();
+            if (StartProperty.UseAutoVersioning)
+                StartProperty.Version = GetAutoVersion().ToString();
 
             // find the longest line in the logo
             int longestLen = 0;
-            if (StartProperties.LogoString != null)
-                foreach (var line in StartProperties.LogoString.Split('\n'))
+            if (StartProperty.LogoString != null)
+                foreach (var line in StartProperty.LogoString.Split('\n'))
                     if (line.Length > longestLen)
                         longestLen = line.Length;
 
             // set the console size to 150 or the longest line in the logo, whichevers longer
-            if (StartProperties.AutoSize)
+            if (StartProperty.AutoSize)
             {
                 Console.WindowWidth = (longestLen < 115 ? 115 : longestLen);
                 Console.BufferWidth = Console.WindowWidth;
             }
 
-            // print hte logo and attributions
+            // print the logo and attributions
             PrintLogo();
 
             // setup the title loop if enabled
-            if (StartProperties.Title != null)
+            if (StartProperty.Title != null)
             {
-                Console.Title = StartProperties.Title.Text;
-                if (StartProperties.Title.Animated)
+                Console.Title = StartProperty.Title.Text;
+                if (StartProperty.Title.Animated)
                 {
-                    if (!StartProperties.SilentStart)
+                    if (!StartProperty.SilentStart)
                         WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "work" } }, "Starting animated title thread");
 
                     // start the animated title
                     new Thread(animatedTitleLoop).Start();
 
-                    if (!StartProperties.SilentStart)
+                    if (!StartProperty.SilentStart)
                         WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "ok" } }, "Animated title thread started");
                 }
             }
 
-            if (!StartProperties.SilentStart)
+            if (!StartProperty.SilentStart)
                 WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "work" } }, "Starting work loop thread");
 
             // start the writeloop
             workThread = new Thread(workLoop);
             workThread.Start();
 
-            if (!StartProperties.SilentStart)
+            if (!StartProperty.SilentStart)
                 WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "ok" } }, "Work thread started");
 
-            ItemAddedToQueue += (msg) =>
+            if (StartProperty.DebugMode)
             {
-                if (StartProperties.DebugMode)
+                ItemAddedToQueue += (msg) =>
                 {
-                    Debug.WriteLine($"New item in queue: {JsonConvert.SerializeObject(msg)}");
-                }
-            };
+                        Debug.WriteLine($"New item in queue: {JsonConvert.SerializeObject(msg)}");
+                };
+            }
         }
 
         bool prevTog;
@@ -500,8 +505,11 @@ namespace Veylib.CLIUI
             WriteLine();
         }
 
-        private void ParseWrite(object[] messageOrColor, MessageProperties properties = null)
+        private void parseWrite(object[] messageOrColor, MessageProperties properties = null)
         {
+            if (StartProperty == null)
+                Start();
+
             if (properties == null)
                 properties = new MessageProperties(StartProperty.ColorRotation);
             if (messageOrColor != null)
@@ -519,12 +527,12 @@ namespace Veylib.CLIUI
 
         public void WriteLine(MessageProperties properties, params object[] messageOrColor)
         {
-            ParseWrite(messageOrColor, properties);
+            parseWrite(messageOrColor, properties);
         }
 
         public void WriteLine(params object[] messageOrColor)
         {
-            ParseWrite(messageOrColor);
+            parseWrite(messageOrColor);
         }
 
         public void WriteLine(MessageProperties properties)
