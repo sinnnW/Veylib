@@ -521,8 +521,8 @@ namespace Veylib.CLIUI
             WriteQueue.Enqueue(properties);
 
             // invoke the event
-            //lock (ItemAddedToQueue)
-            //    ItemAddedToQueue?.Invoke(Properties);
+            lock (ItemAddedToQueue)
+                ItemAddedToQueue?.Invoke(properties);
         }
 
         public void WriteLine(MessageProperties properties, params object[] messageOrColor)
