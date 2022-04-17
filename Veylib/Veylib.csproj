@@ -53,6 +53,7 @@
     <Compile Include="Authentication\Vars.cs" />
     <Compile Include="CLIUI\AsciiTable.cs" />
     <Compile Include="CLIUI\Core.cs" />
+    <Compile Include="CLIUI\ProgressBar.cs" />
     <Compile Include="CLIUI\SelectionMenu.cs" />
     <Compile Include="ColorManagement.cs" />
     <Compile Include="DependencyControl.cs" />

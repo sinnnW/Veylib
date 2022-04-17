@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Diagnostics;
-using System.Threading;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
-
-// Nuget
-using Newtonsoft.Json;
+using System.Threading;
 
 /*
  * Welcome to version 2 of my UI library, now
@@ -25,8 +23,11 @@ namespace Veylib.CLIUI
     {
         public static class Formatting
         {
-            public static string Reset = "\x1B[0m";
-            public static string Underline = "\x1B[4m";
+            public static readonly string Reset = "\x1B[0m";
+            public static readonly string Underline = "\x1B[4m";
+            public static readonly string Bold = "\x1b[2m";
+            public static readonly string Italic = "\x1b[3m";
+            public static readonly string Blink = "\x1b[5m";
 
             public static string CreateDivider()
             {
@@ -156,6 +157,17 @@ namespace Veylib.CLIUI
                 Label = new MessagePropertyLabel();
             }
 
+            public override string ToString()
+            {
+                var sb = new StringBuilder();
+                ColoringGroups.ForEach(item => {
+                    var allStrings = Array.FindAll(item, item2 => item2 is string);
+                    sb.Append(string.Join("", allStrings));
+                });
+
+                return sb.ToString();
+            }
+
             public List<object[]> ColoringGroups = new List<object[]>();
             public bool WordWrap = true;
 
@@ -166,6 +178,7 @@ namespace Veylib.CLIUI
             public bool ShowHeaderAfter = false;
             public bool Center = false;
             public bool BypassLock = false;
+            public bool NoNewLine = false;
 
             public int TextLength = 0;
             public int? YCood = null;
@@ -199,6 +212,15 @@ namespace Veylib.CLIUI
             public string Status;
         }
 
+        public class StartupSpashScreenProperties
+        {
+            public bool AutoGenerate = false;
+            public bool AutoCenter = true;
+            public bool DisplayProgressBar = false;
+            public int DisplayTime = 5000; // MS
+            public string Content;
+        }
+
         public class StartupProperties
         {
             public StartupProperties()
@@ -206,18 +228,18 @@ namespace Veylib.CLIUI
                 Title = new StartupConsoleTitleProperties();
                 Author = new StartupAuthorProperties();
                 UserInformation = new StartupInterfaceProperties();
+                SplashScreen = new StartupSpashScreenProperties();
             }
-
 
             public StartupConsoleTitleProperties Title;
             public StartupAuthorProperties Author;
             public StartupInterfaceProperties UserInformation;
+            public StartupSpashScreenProperties SplashScreen;
 
             public string LogoString;
             public string Version = null;
             public string MOTD;
 
-            public bool SilentStart = true;
             public bool AutoSize = true;
             public bool UseAutoVersioning = false;
             public bool DebugMode = false;
@@ -242,7 +264,7 @@ namespace Veylib.CLIUI
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr GetStdHandle(int nStdHandle);
 
-        public static Queue<MessageProperties> WriteQueue;
+        public static List<MessageProperties> WriteQueue;
         public static StartupProperties StartProperty = null;
 
         // if this is true, it will pause printing
@@ -270,7 +292,7 @@ namespace Veylib.CLIUI
             Debug.WriteLine("STARTING...");
 
             StartProperty = startProperties == null ? new StartupProperties() : startProperties;
-            WriteQueue = new Queue<MessageProperties>();
+            WriteQueue = new List<MessageProperties>();
             colorRotationStart = StartProperty.ColorRotation;
 
             Debug.WriteLine("queue");
@@ -299,47 +321,35 @@ namespace Veylib.CLIUI
                 Console.BufferWidth = Console.WindowWidth;
             }
 
-            // print the logo and attributions
-            PrintLogo();
-
             // setup the title loop if enabled
             if (StartProperty.Title != null)
             {
                 Console.Title = StartProperty.Title.Text;
                 if (StartProperty.Title.Animated)
-                {
-                    if (!StartProperty.SilentStart)
-                        WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "work" } }, "Starting animated title thread");
-
-                    // start the animated title
                     new Thread(animatedTitleLoop).Start();
-
-                    if (!StartProperty.SilentStart)
-                        WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "ok" } }, "Animated title thread started");
-                }
             }
-
-            if (!StartProperty.SilentStart)
-                WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "work" } }, "Starting work loop thread");
 
             // start the writeloop
             workThread = new Thread(workLoop);
             workThread.Start();
 
-            if (!StartProperty.SilentStart)
-                WriteLine(new MessageProperties { Label = new MessagePropertyLabel { Text = "ok" } }, "Work thread started");
+            // show splash if enabled
+            ShowSplash();
+
+            // print the logo and attributions
+            PrintLogo();
 
             if (StartProperty.DebugMode)
             {
                 ItemAddedToQueue += (msg) =>
                 {
-                        Debug.WriteLine($"New item in queue: {JsonConvert.SerializeObject(msg)}");
+                    Debug.WriteLine($"New item in queue: {JsonConvert.SerializeObject(msg)}");
                 };
             }
         }
 
         bool prevTog;
-        public void Clear()
+        public void Clear(bool showLogo = true)
         {
             if (WriteQueue.Count > 0)
                 WriteQueue.Clear();
@@ -358,7 +368,8 @@ namespace Veylib.CLIUI
             CursorY = 0; // reset the console Y
 
             // print the logo
-            PrintLogo();
+            if (showLogo)
+                PrintLogo();
 
             if (workThread != null && !workThread.IsAlive)
             {
@@ -448,7 +459,7 @@ namespace Veylib.CLIUI
         {
             if (StartProperty.LogoString != null)
                 foreach (var line in StartProperty.LogoString.Split('\n'))
-                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, line);//.Replace("\r", string.Empty));
+                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, line);
 
             // attributions
             if (StartProperty.Author.Name != null)
@@ -489,6 +500,70 @@ namespace Veylib.CLIUI
                 WriteLine();
         }
 
+        public void ShowSplash()
+        {
+            if (StartProperty.SplashScreen == null)
+                return;
+
+            var paused = PauseConsole;
+            PauseConsole = true;
+
+            var visible = Console.CursorVisible;
+            Console.CursorVisible = false;
+
+            Clear();
+
+            var centerAmnt = 0;
+            foreach (var line in StartProperty.LogoString.Split('\n'))
+            {
+                var tmp = (Console.WindowWidth / 2) - (line.Length / 2);
+                if (centerAmnt < tmp)
+                    centerAmnt = tmp;
+            }
+
+            if (StartProperty.SplashScreen.AutoGenerate)
+            {
+                WriteLine(new MessageProperties { Label = null, Time = null, BypassLock = true }, new string('\n', (Console.WindowHeight / 2) - (StartProperty.LogoString.Split('\n').Length / 2) - (StartProperty.Author != null ? 1 : 0)));
+
+                foreach (var line in StartProperty.LogoString.Split('\n'))
+                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true, BypassLock = true }, $"{new string(' ', centerAmnt)}{line}");
+
+                WriteLine(new MessageProperties { Label = null, Time = null, HorizontalRainbow = true, Center = true, BypassLock = true }, $"Made by {StartProperty.Author.Name}");
+            }
+
+            long timeStarted = General.EpochTimeMilliseconds;
+            long timeEnd = timeStarted + StartProperty.SplashScreen.DisplayTime;
+            if (StartProperty.SplashScreen.DisplayProgressBar)
+            {
+                new Thread(() => {
+                    var pb = new ProgressBar(new ProgressBar.Settings { TotalParts = 100, Style = new ProgressBar.Style { Dock = ProgressBar.Dock.Bottom } });
+
+                    //while ((timeStarted - General.EpochTimeMilliseconds) < timeEnd)
+                    while (((int)(General.EpochTimeMilliseconds - timeStarted)) * 100 / StartProperty.SplashScreen.DisplayTime < 100)
+                    {
+                        pb.SetProgress(((int)(General.EpochTimeMilliseconds - timeStarted)) * 100 / StartProperty.SplashScreen.DisplayTime);
+                        pb.Render();
+                        Thread.Sleep(50);
+                    }
+
+                    pb.Remove();
+                }).Start();
+            }
+            
+            // Anti scroll
+            //new Thread(() =>
+            //{
+            //    while (StartProperty.SplashScreen.DisplayTime + timeStarted < timeEnd)
+            //        Console.SetWindowPosition(0,0);
+            //}).Start();
+
+            Thread.Sleep(StartProperty.SplashScreen.DisplayTime);
+            Clear(false);
+
+            PauseConsole = paused;
+            Console.CursorVisible = visible;
+        }
+
         public void CreateAlert(string Title, Color Divider, params string[] Lines)
         {
             string div = Formatting.CreateDivider();
@@ -518,11 +593,12 @@ namespace Veylib.CLIUI
             while (newItemLock && !properties.BypassLock)
                 Thread.Sleep(100);
 
-            WriteQueue.Enqueue(properties);
+            WriteQueue.Add(properties);
 
             // invoke the event
-            lock (ItemAddedToQueue)
-                ItemAddedToQueue?.Invoke(properties);
+            if (ItemAddedToQueue != null)
+                lock (ItemAddedToQueue)
+                    ItemAddedToQueue?.Invoke(properties);
         }
 
         public void WriteLine(MessageProperties properties, params object[] messageOrColor)
@@ -541,7 +617,7 @@ namespace Veylib.CLIUI
                 Thread.Sleep(100);
 
             if (properties.ColoringGroups != null)
-                WriteQueue.Enqueue(properties);
+                WriteQueue.Add(properties);
         }
 
         public void WriteLine()
@@ -549,7 +625,7 @@ namespace Veylib.CLIUI
             while (newItemLock)
                 Thread.Sleep(100);
 
-            WriteQueue.Enqueue(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, ColoringGroups = new List<object[]> { new object[] { null } } });
+            WriteQueue.Add(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, ColoringGroups = new List<object[]> { new object[] { null } } });
         }
 
         private string createColorString(Color Col)
@@ -569,39 +645,50 @@ namespace Veylib.CLIUI
                     // make sure theres work to do
                     if (WriteQueue.Count == 0)
                         continue;
-                    if (PauseConsole)
-                        continue;
 
                     // get and remove the properties from the list
-                    MessageProperties properties = WriteQueue.Peek();
+                    int index = 0;
+                    MessageProperties properties = WriteQueue[index];
+
+                    if (PauseConsole)
+                    {
+                        var filtered = WriteQueue.FindAll(item => item != null && item.BypassLock);
+
+                        if (filtered.Count > 0)
+                        {
+                            properties = filtered[0];
+                            index = WriteQueue.IndexOf(filtered[0]);
+                        }
+                        else
+                            continue; 
+                    }
 
                     // make sure that its all valid
                     if (properties == null)
                     {
-                        WriteQueue.Dequeue();
+                        WriteQueue.RemoveAt(index);
                         continue;
                     }
-
-                    if (properties.ShowHeaderAfter && properties.ColoringGroups != null && properties.ColoringGroups.Count == 0)
+                    else if (properties.ShowHeaderAfter && properties.ColoringGroups != null && properties.ColoringGroups.Count == 0)
                     {
                         PrintHeader();
-                        WriteQueue.Dequeue();
+                        WriteQueue.RemoveAt(index);
                         continue;
                     }
                     else if (properties.ColoringGroups == null || properties.ColoringGroups.Count == 0)
                     {
                         if (StartProperty.DebugMode)
                             Debug.WriteLine("Dequeueing item since coloring group is null");
-                        WriteQueue.Dequeue();
+                        WriteQueue.RemoveAt(index);
                         continue;
                     }
                     else if (!(properties.ColoringGroups[0][0] is Color) && (properties.ColoringGroups[0][0] is string ? properties.ColoringGroups[0][0].ToString().ToLower() != "rainbow" : true))
                     {
-                        if (properties.ColoringGroups.Count == 1) // make sure that theres one coloring group and tha
+                        if (properties.ColoringGroups.Count == 1 && !properties.NoNewLine) // make sure that theres one coloring group and tha
                             CursorY++;
 
                         Console.WriteLine();
-                        WriteQueue.Dequeue();
+                        WriteQueue.RemoveAt(index);
                         continue;
                     }
 
@@ -700,8 +787,6 @@ namespace Veylib.CLIUI
                         Debug.Write(sb.ToString());
                     }
 
-                    Debug.WriteLine("");
-
                     // adjust the cursors Y cood, this is used for overflowing text. it calculates this based on the length of the total line vs the buffer width
                     int total = 0; // 6 is offset of sides
                     if (properties.Label != null && properties.Label.Show)
@@ -710,7 +795,8 @@ namespace Veylib.CLIUI
                         total += properties.Time.Text.Length + 3;
 
                     //CursorY += (int)Math.Floor((decimal)((total + properties.TextLength) / Console.BufferWidth)) + 1;
-                        CursorY++;
+                    if (!properties.NoNewLine)
+                        CursorY += properties.ToString().Split('\n').Length;
 
                     // write the label
                     if (properties.Label != null && properties.Label.Show)
@@ -727,11 +813,15 @@ namespace Veylib.CLIUI
                     HeaderPrintedLast = false;
 
                     // create final writing
-                    Console.WriteLine();
+                    if (!properties.NoNewLine)
+                    {
+                        Console.WriteLine();
+                        Debug.WriteLine("");
+                    }
                     Console.ResetColor();
 
                     if (WriteQueue.Count > 0)
-                        WriteQueue.Dequeue();
+                        WriteQueue.RemoveAt(index);
 
                     if (WriteQueue.Count == 0)
                         QueueCleared?.Invoke();
@@ -748,7 +838,7 @@ namespace Veylib.CLIUI
                 catch (Exception ex)
                 {
                     if (WriteQueue.Count > 0)
-                        WriteQueue.Dequeue();
+                        WriteQueue.RemoveAt(0);
 
                     // some error
                     Debug.WriteLine(ex);
@@ -757,7 +847,7 @@ namespace Veylib.CLIUI
             }
         }
 
-        public string ReadLine(string Pre)
+        public string ReadLine(string pre = "", Color? inputColor = null, bool forceBack = true)
         {
             while (WriteQueue.Count > 0)
                 Thread.Sleep(5);
@@ -766,23 +856,25 @@ namespace Veylib.CLIUI
                 CursorY = 0;
 
             //Console.SetCursorPosition(6 + (StartProperty.UserInformation != null ? StartProperty.UserInformation.Username.Length + StartProperty.UserInformation.Host.Length : 0), CursorY);
-            CursorY++;
 
-            Console.Write($"\r{Pre}");
+            CursorY++;
+            Console.Write($"{(forceBack ? "\r" : "")}{pre}");
+
+            if (inputColor != null)
+                Console.Write(createColorString(inputColor ?? Color.White));
+
             return Console.ReadLine();
         }
 
-        public string ReadLine()
-        {
-            return ReadLine("");
-        }
-
-        public string ReadLineProtected(string Pre = null)
+        public string ReadLineProtected(string pre = null, Color? inputColor = null, int startingPos = 0)
         {
             StringBuilder sb = new StringBuilder();
 
-            if (Pre != null)
-                Console.Write(Pre);
+            if (pre != null)
+                Console.Write(pre);
+
+            if (inputColor != null)
+                Console.Write(createColorString(inputColor ?? Color.White));
 
             while (true)
             {
@@ -797,9 +889,9 @@ namespace Veylib.CLIUI
                     }
 
                     sb.Remove(sb.Length - 1, 1);
-                    Console.SetCursorPosition(Pre.Length + (sb.Length), CursorY);
+                    Console.SetCursorPosition((startingPos > 0 ? startingPos : pre.Length) + (sb.Length), CursorY);
                     Console.Write(" ");
-                    Console.SetCursorPosition(Pre.Length + (sb.Length), CursorY);
+                    Console.SetCursorPosition((startingPos > 0 ? startingPos : pre.Length) + (sb.Length), CursorY);
                     continue;
                 }
                 else if (key.Key == ConsoleKey.Enter) // Return string if finished
@@ -810,7 +902,7 @@ namespace Veylib.CLIUI
 
                 sb.Append(key.KeyChar);
 
-                Console.SetCursorPosition(Pre.Length + (sb.Length - 1), CursorY);
+                Console.SetCursorPosition((startingPos > 0 ? startingPos : pre.Length) + (sb.Length - 1), CursorY);
                 Console.Write("*");
             }
         }

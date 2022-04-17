@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
 using System.IO;
+using System.Net;
 
 namespace Veylib
 {
     public class DependencyControl
     {
-        private static List<string> requiredFiles = new List<string>();
+        private static readonly List<string> requiredFiles = new List<string>();
         public static string SiteBase;
 
         public static void AddFile(string fileName)
@@ -24,7 +24,9 @@ namespace Veylib
                 try
                 {
                     wc.DownloadFile($"{SiteBase}/{file}", Path.Combine(Environment.CurrentDirectory, file));
-                } catch (Exception ex) {
+                }
+                catch (Exception ex)
+                {
                     Debug.WriteLine($"Failed to download {file}: {ex}");
                 }
             }

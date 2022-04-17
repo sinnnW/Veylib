@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace Veylib
 {
@@ -20,7 +17,7 @@ namespace Veylib
                 public bool RemoveInsults = true;
             }
 
-            private Settings sett;
+            private readonly Settings sett;
             public Structure(Settings settings)
             {
                 sett = settings;
@@ -78,7 +75,7 @@ namespace Veylib
                     int removalsIndex = 0;
 
                     // look for a phrase
-                    for (var x = 0;x < output.Count;x++)
+                    for (var x = 0; x < output.Count; x++)
                     {
                         foreach (var init in insultInitializers)
                         {
@@ -107,7 +104,7 @@ namespace Veylib
                                     {
                                         foreach (var name in File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "names.txt")))
                                             if (output[x + offset].Contains(name.ToLower()))
-                                                removals[removalsIndex].Add(output[x + offset]);    
+                                                removals[removalsIndex].Add(output[x + offset]);
 
                                         break;
                                     }

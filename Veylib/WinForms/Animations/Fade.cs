@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Diagnostics;
 
 namespace Veylib.WinForms.Animations
 {
@@ -14,7 +13,7 @@ namespace Veylib.WinForms.Animations
 
         public enum Mode
         {
-            FadeIn, 
+            FadeIn,
             FadeOut
         }
 
@@ -33,7 +32,8 @@ namespace Veylib.WinForms.Animations
             if (frm.InvokeRequired)
             {
                 frm.Invoke((MethodInvoker)(() => { frm.Opacity = op; }));
-            } else
+            }
+            else
                 frm.Opacity = op;
         }
 
@@ -101,7 +101,7 @@ namespace Veylib.WinForms.Animations
         /// Fade the control in.
         /// </summary>
         public void In()
-          {
+        {
             // Duh.
             fade(Mode.FadeIn);
         }

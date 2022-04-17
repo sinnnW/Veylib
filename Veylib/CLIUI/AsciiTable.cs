@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.Drawing;
+using System.Text;
 
 namespace Veylib.CLIUI
 {
@@ -55,6 +55,15 @@ namespace Veylib.CLIUI
 
             // import properties
             Property = prop;
+        }
+
+        public AsciiTable(params string[] columns)
+        {
+            Rows = new List<Row>();
+            Columns = new List<Column>();
+
+            foreach (var col in columns)
+                Columns.Add(new Column(this, col));
         }
 
         public List<Row> Rows;
