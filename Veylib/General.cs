@@ -39,6 +39,15 @@ namespace Veylib
                 return (long)t.TotalSeconds;
             }
         }
+        
+        public static long EpochTimeMilliseconds
+        {
+            get
+            {
+                TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
+                return (long)t.TotalMilliseconds;
+            }
+        }
 
         /// <summary>
         /// Get the epoch time from DateTime
