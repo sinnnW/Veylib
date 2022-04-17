@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Threading;
 
@@ -10,10 +7,9 @@ namespace Veylib.CLIUI
 {
     public class SelectionMenu
     {
-        private Core core = Core.GetInstance();
-        private int renderCount = 0;
-        private int hue;
-        private int curY;
+        private readonly Core core = Core.GetInstance();
+        private readonly int hue;
+        private readonly int curY;
 
         public List<string> Options = new List<string>();
         public int Index = 0;
@@ -45,7 +41,7 @@ namespace Veylib.CLIUI
                             Index--;
                         break;
                     case ConsoleKey.Enter:
-                        var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - (Options.Count * renderCount) + Index };
+                        var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - Options.Count + Index };
                         core.WriteLine(props, "> ", Color.Lime, Core.Formatting.Underline, Options[Index]);
 
                         Core.StartProperty.ColorRotation = hue;
@@ -62,10 +58,10 @@ namespace Veylib.CLIUI
             while (Core.WriteQueue.Count > 0)
                 Thread.Sleep(100);
 
-            renderCount++;
-            for (var x = 0;x < Options.Count;x++)
+            //renderCount++;
+            for (var x = 0; x < Options.Count; x++)
             {
-                var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - (Options.Count * renderCount) + (x + 2)};
+                var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - Options.Count + (x + 2), NoNewLine = true };
                 if (x == Index)
                     core.WriteLine(props, "> ", Color.White, Core.Formatting.Underline, Options[x]);
                 else
