@@ -39,6 +39,8 @@ namespace Veylib.CLIUI
 
         public AsciiTable(int rows, int columns)
         {
+            Property = new Properties();
+
             // alotting the amount
             Rows = new List<Row>(rows);
             Columns = new List<Column>(columns);
@@ -46,6 +48,8 @@ namespace Veylib.CLIUI
 
         public AsciiTable(Properties prop = null)
         {
+            Property = new Properties();
+
             if (prop == null)
                 prop = new Properties();
 
@@ -59,6 +63,8 @@ namespace Veylib.CLIUI
 
         public AsciiTable(params string[] columns)
         {
+            Property = new Properties();
+
             Rows = new List<Row>();
             Columns = new List<Column>();
 
@@ -101,7 +107,7 @@ namespace Veylib.CLIUI
                 parent.RowIdentifier++;
 
                 foreach (var col in columns)
-                    Cells.Add(col);
+                    Cells.Add(col ?? "");
             }
 
             public List<dynamic> Cells;
