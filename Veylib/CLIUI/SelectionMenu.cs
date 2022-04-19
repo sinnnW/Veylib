@@ -12,9 +12,41 @@ namespace Veylib.CLIUI
         private readonly int curY;
 
         public List<string> Options = new List<string>();
+        public Settings CurrentSettings;
         public int Index = 0;
+
+        public class Settings
+        {
+            public Settings()
+            {
+                Style = new Style();
+            }
+
+            public Style Style;
+        }
+
+        public class Style
+        {
+            public Color NeutralColor = Color.WhiteSmoke;
+            public Color SelectionHighlightColor = Color.White;
+            public Color SelectedColor = Color.Lime;
+            
+            public string SelectionFormatTags = Core.Formatting.Underline;
+            public string SelectedFormatTags = Core.Formatting.Underline;
+
+            public string PreOptionText = "> ";
+            public string PreOptionFormatTags = "";
+            public string PreOptionHighlightFormatTags = "";
+            public string PreOptionSelectedFormatTags = "";
+
+            public Color PreOptionColor = Color.WhiteSmoke;
+            public Color PreOptionHighlightColor = Color.White;
+            public Color PreOptionSelectedColor = Color.WhiteSmoke;
+        }
+
         public SelectionMenu(params string[] opts)
         {
+            CurrentSettings = new Settings();
             hue = Core.StartProperty.ColorRotation;
             curY = Core.CursorY + opts.Length + 1;
             foreach (var opt in opts)
@@ -42,7 +74,7 @@ namespace Veylib.CLIUI
                         break;
                     case ConsoleKey.Enter:
                         var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - Options.Count + Index + 2 };
-                        core.WriteLine(props, "> ", Color.Lime, Core.Formatting.Underline, Options[Index]);
+                        core.WriteLine(props, CurrentSettings.Style.PreOptionSelectedColor, CurrentSettings.Style.PreOptionSelectedFormatTags, CurrentSettings.Style.PreOptionText, Core.Formatting.Reset, CurrentSettings.Style.SelectedColor, CurrentSettings.Style.SelectedFormatTags, Options[Index]);
 
                         Core.StartProperty.ColorRotation = hue;
                         Core.CursorY = curY;
@@ -63,9 +95,9 @@ namespace Veylib.CLIUI
             {
                 var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - Options.Count + (x + 2), NoNewLine = true };
                 if (x == Index)
-                    core.WriteLine(props, "> ", Color.White, Core.Formatting.Underline, Options[x]);
+                    core.WriteLine(props, CurrentSettings.Style.PreOptionHighlightColor, CurrentSettings.Style.PreOptionHighlightFormatTags, CurrentSettings.Style.PreOptionText, Core.Formatting.Reset, CurrentSettings.Style.SelectionHighlightColor, CurrentSettings.Style.SelectionFormatTags, Options[x]);
                 else
-                    core.WriteLine(props, "> ", Core.Formatting.Reset, Options[x]);
+                    core.WriteLine(props, CurrentSettings.Style.PreOptionColor, CurrentSettings.Style.PreOptionFormatTags, CurrentSettings.Style.PreOptionText, Core.Formatting.Reset, Options[x]);
             }
         }
     }
