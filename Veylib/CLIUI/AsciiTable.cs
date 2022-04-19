@@ -287,8 +287,6 @@ namespace Veylib.CLIUI
                     for (var x = 0; x < (Columns.Count - row.Cells.Count) + 1; x++)
                         row.Cells.Add(" ");
 
-                Debug.WriteLine(row.Cells.Count.ToString());
-
                 for (var x = 0; x < row.Cells.Count; x++)
                     cellsFormatted.Add($"{row.Cells[x]}{(colWidth - row.Cells[x].ToString().Length > 0 ? new string(' ', colWidth - row.Cells[x].ToString().Length - 3) : "")}");
 
@@ -336,13 +334,13 @@ namespace Veylib.CLIUI
             {
                 if (x == 0 || x == lines.Length - 1 || lines[x].StartsWith(updownright.ToString()))
                     if (Property.Colors.RainbowDividers)
-                        core.WriteLine(new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, VerticalRainbow = true, Center = true }, lines[x]);
+                        core.WriteLine(new Core.MessageProperties { Label = null, Time = null, VerticalRainbow = true, Center = true }, lines[x]);
                     else
-                        core.WriteLine(new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, Center = true }, Property.Colors.PipeColor, lines[x]);
+                        core.WriteLine(new Core.MessageProperties { Label = null, Time = null, Center = true }, Property.Colors.PipeColor, lines[x]);
                 else if (lines[x].StartsWith(updown.ToString()))
                 {
                     StringBuilder sb = new StringBuilder();
-                    Core.MessageProperties mp = new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, Center = true };
+                    Core.MessageProperties mp = new Core.MessageProperties { Label = null, Time = null, Center = true };
                     for (var y = 0; y < lines[x].Length; y++)
                     {
                         if (lines[x][y] == updown)
@@ -364,7 +362,7 @@ namespace Veylib.CLIUI
                     core.WriteLine(mp);
                 }
                 else
-                    core.WriteLine(new Core.MessageProperties { Label = new Core.MessagePropertyLabel { Show = false }, Time = new Core.MessagePropertyTime { Show = false }, Center = true }, lines[x]);
+                    core.WriteLine(new Core.MessageProperties { Label = null, Time = null, Center = true }, lines[x]);
             }
         }
     }
