@@ -272,6 +272,9 @@ namespace Veylib.CLIUI
         public static bool HeaderPrintedLast = false;
         public static bool newItemLock = false;
 
+        //public static int DeadspaceTop = 0;
+        public static int DeadspaceBottom = 0;
+
         public static int CursorY = 0;
         private static int colorRotationStart = 0;
         private Thread workThread;
@@ -633,6 +636,19 @@ namespace Veylib.CLIUI
             return $"\x1b[38;2;{Col.R};{Col.G};{Col.B}m";
         }
 
+        private static int lastSet = 0;
+        private void setWindow()
+        {
+            // fucking aids
+            int y = CursorY - (Console.WindowHeight - DeadspaceBottom);
+            if (DeadspaceBottom > 0 && y > 0 && y > lastSet)
+            {
+                lastSet = y;
+                Console.SetWindowPosition(0, y);
+                Debug.WriteLine(y);
+            }
+        }
+
         private void workLoop()
         {
             // never stop
@@ -687,10 +703,13 @@ namespace Veylib.CLIUI
                         if (properties.ColoringGroups.Count == 1 && !properties.NoNewLine) // make sure that theres one coloring group and tha
                             CursorY++;
 
+                        setWindow();
                         Console.WriteLine();
                         WriteQueue.RemoveAt(index);
                         continue;
                     }
+
+                    setWindow();
 
                     // increase the color rotation
                     StartProperty.ColorRotation += StartProperty.ColorRotationOffset;
@@ -801,6 +820,7 @@ namespace Veylib.CLIUI
                     // write the label
                     if (properties.Label != null && properties.Label.Show)
                     {
+                        Console.Write(new string(' ', Console.BufferWidth - properties.Label.Text.Length - 4 - Console.CursorLeft));
                         Console.CursorLeft = Console.BufferWidth - properties.Label.Text.Length - 4;
 
                         Console.ResetColor();
@@ -847,7 +867,7 @@ namespace Veylib.CLIUI
             }
         }
 
-        public string ReadLine(string pre = "", Color? inputColor = null, bool forceBack = true)
+        public string ReadLine(string pre = "", Color? inputColor = null, int startingPos = 0)
         {
             while (WriteQueue.Count > 0)
                 Thread.Sleep(5);
@@ -855,10 +875,10 @@ namespace Veylib.CLIUI
             if (CursorY < 0)
                 CursorY = 0;
 
-            //Console.SetCursorPosition(6 + (StartProperty.UserInformation != null ? StartProperty.UserInformation.Username.Length + StartProperty.UserInformation.Host.Length : 0), CursorY);
+            Console.SetCursorPosition(startingPos, CursorY);
 
             CursorY++;
-            Console.Write($"{(forceBack ? "\r" : "")}{pre}");
+            Console.Write(pre);
 
             if (inputColor != null)
                 Console.Write(createColorString(inputColor ?? Color.White));
