@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 /*
  * Welcome to version 2 of my UI library, now
@@ -54,10 +55,22 @@ namespace Veylib.CLIUI
 
         public class MessagePropertyTime
         {
+            public MessagePropertyTime Clone()
+            {
+                return (MessagePropertyTime)MemberwiseClone();
+            }
+
             public void UpdateColor()
             {
-                ColorManagement.GetInstance().HsvToRgb(Core.StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
-                Color = Color.FromArgb(r, g, b);
+                if (Color == null && StartProperty.DefaultMessageTime.Color == null)
+                {
+                    ColorManagement.GetInstance().HsvToRgb(StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
+                    Color = Color.FromArgb(r, g, b);
+                }
+                else if (StartProperty.DefaultMessageTime.Color != null)
+                    Color = StartProperty.DefaultMessageTime.Color;
+
+
             }
 
             public bool Show = true;
@@ -67,6 +80,11 @@ namespace Veylib.CLIUI
 
         public class MessagePropertyLabel
         {
+            public MessagePropertyLabel Clone()
+            {
+                return (MessagePropertyLabel)MemberwiseClone();
+            }
+
             // dictionary for printing and auto prefixing
             private readonly Dictionary<string, dynamic[]> WordToColorDict = new Dictionary<string, object[]>()
             {
@@ -86,7 +104,7 @@ namespace Veylib.CLIUI
 
             public MessagePropertyLabel()
             {
-                ColorManagement.GetInstance().HsvToRgb(Core.StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
+                ColorManagement.GetInstance().HsvToRgb(StartProperty?.ColorRotation ?? 0, 1, 1, out int r, out int g, out int b);
                 Color = Color.FromArgb(r, g, b);
 
                 // set other values
@@ -110,6 +128,12 @@ namespace Veylib.CLIUI
             public bool Show = true;
             public string Text;
             public Color Color;
+        }
+
+        public class DockOffset
+        {
+            public int Top = 0;
+            public int Bottom = 0;
         }
 
         public class MessageProperties
@@ -153,8 +177,8 @@ namespace Veylib.CLIUI
                 Parse(MessageOrColor);
 
                 // setup the nested classes
-                Time = new MessagePropertyTime();
-                Label = new MessagePropertyLabel();
+                Time = StartProperty.DefaultMessageTime.Clone();
+                Label = StartProperty.DefaultMessageLabel.Clone();
             }
 
             public override string ToString()
@@ -185,6 +209,7 @@ namespace Veylib.CLIUI
 
             public MessagePropertyTime Time;
             public MessagePropertyLabel Label;
+            public DockOffset DockOffset = new DockOffset();
         }
 
         public class StartupInterfaceProperties
@@ -214,11 +239,26 @@ namespace Veylib.CLIUI
 
         public class StartupSpashScreenProperties
         {
+            public StartupSpashScreenProperties()
+            {
+                ProgressBarSettings = new ProgressBar.Settings();
+            }
+
             public bool AutoGenerate = false;
             public bool AutoCenter = true;
+            
             public bool DisplayProgressBar = false;
+            public ProgressBar.Settings ProgressBarSettings;
+            
             public int DisplayTime = 5000; // MS
             public string Content;
+        }
+
+        public class StartupMOTDProperties
+        {
+            public string Text;
+            public Color? DividerColor = null;
+            public Color TextColor = Color.White;
         }
 
         public class StartupProperties
@@ -229,16 +269,21 @@ namespace Veylib.CLIUI
                 Author = new StartupAuthorProperties();
                 UserInformation = new StartupInterfaceProperties();
                 SplashScreen = new StartupSpashScreenProperties();
+                DefaultMessageLabel = new MessagePropertyLabel();
+                DefaultMessageTime = new MessagePropertyTime();
+                MOTD = new StartupMOTDProperties();
             }
 
             public StartupConsoleTitleProperties Title;
             public StartupAuthorProperties Author;
             public StartupInterfaceProperties UserInformation;
             public StartupSpashScreenProperties SplashScreen;
+            public MessagePropertyLabel DefaultMessageLabel;
+            public MessagePropertyTime DefaultMessageTime;
+            public StartupMOTDProperties MOTD;
 
             public string LogoString;
             public string Version = null;
-            public string MOTD;
 
             public bool AutoSize = true;
             public bool UseAutoVersioning = false;
@@ -298,8 +343,6 @@ namespace Veylib.CLIUI
             WriteQueue = new List<MessageProperties>();
             colorRotationStart = StartProperty.ColorRotation;
 
-            Debug.WriteLine("queue");
-
             // set the console mode to support colors
             var Handle = GetStdHandle(-11);
             uint Mode;
@@ -358,8 +401,8 @@ namespace Veylib.CLIUI
                 WriteQueue.Clear();
 
             // Abort write thread
-            if (workThread != null && workThread.IsAlive)
-                workThread.Abort();
+            //if (workThread != null && workThread.IsAlive)
+            //    workThread.Abort();
 
             prevTog = StartProperty.UserInformation.ShowNextLine;
             if (prevTog)
@@ -374,11 +417,11 @@ namespace Veylib.CLIUI
             if (showLogo)
                 PrintLogo();
 
-            if (workThread != null && !workThread.IsAlive)
-            {
-                workThread = new Thread(workLoop);
-                workThread.Start();
-            }
+            //if (workThread != null && !workThread.IsAlive)
+            //{
+            //    workThread = new Thread(workLoop);
+            //    workThread.Start();
+            //}
 
             // trigger event
             OnClear?.Invoke();
@@ -478,7 +521,7 @@ namespace Veylib.CLIUI
             WriteLine();
 
             // if theres an motd, write it
-            if (StartProperty.MOTD != null && StartProperty.MOTD.Length > 0)
+            if (StartProperty.MOTD != null && StartProperty.MOTD.Text.Length > 0)
                 PrintMOTD();
             else if (prevTog)
                 StartProperty.UserInformation.ShowNextLine = true;
@@ -488,14 +531,20 @@ namespace Veylib.CLIUI
         {
             string div = Formatting.CreateDivider();
             string divHalf = div.Substring(0, (int)Math.Round((decimal)div.Length / 2));
+            string divColor = StartProperty.MOTD.DividerColor == null ? "" : createColorString(StartProperty.MOTD.DividerColor ?? Color.White);
+            Debug.WriteLine(divColor);
 
-            WriteLine(new MessageProperties { HorizontalRainbow = true, Label = null, Time = null, Center = true }, $"{divHalf} MOTD {divHalf}");
+            bool rb = false;
+            if (StartProperty.MOTD.DividerColor == null)
+                rb = true;
+
+            WriteLine(new MessageProperties { HorizontalRainbow = rb, Label = null, Time = null, Center = true }, $"{divColor}{divHalf} MOTD {divHalf}");
             WriteLine();
 
-            WriteLine(new MessageProperties { Label = null, Time = null, Center = true }, StartProperty.MOTD);
+            WriteLine(new MessageProperties { Label = null, Time = null, Center = true }, StartProperty.MOTD.TextColor, StartProperty.MOTD.Text);
 
             WriteLine();
-            WriteLine(new MessageProperties { HorizontalRainbow = true, Label = null, Time = null, Center = true }, $"{divHalf} MOTD {divHalf}");
+            WriteLine(new MessageProperties { HorizontalRainbow = rb, Label = null, Time = null, Center = true }, $"{divColor}{divHalf} MOTD {divHalf}");
 
             if (StartProperty.UserInformation.ShowNextLine)
                 WriteLine(new MessageProperties { ShowHeaderAfter = true });
@@ -539,7 +588,8 @@ namespace Veylib.CLIUI
             if (StartProperty.SplashScreen.DisplayProgressBar)
             {
                 new Thread(() => {
-                    var pb = new ProgressBar(new ProgressBar.Settings { TotalParts = 100, Style = new ProgressBar.Style { Dock = ProgressBar.Dock.Bottom } });
+                    StartProperty.SplashScreen.ProgressBarSettings.TotalParts = 100;
+                    var pb = new ProgressBar(StartProperty.SplashScreen.ProgressBarSettings);
 
                     //while ((timeStarted - General.EpochTimeMilliseconds) < timeEnd)
                     while (((int)(General.EpochTimeMilliseconds - timeStarted)) * 100 / StartProperty.SplashScreen.DisplayTime < 100)
@@ -631,22 +681,21 @@ namespace Veylib.CLIUI
             WriteQueue.Add(new MessageProperties { Label = new MessagePropertyLabel { Show = false }, Time = new MessagePropertyTime { Show = false }, ColoringGroups = new List<object[]> { new object[] { null } } });
         }
 
+        Regex colorStringRegex = new Regex(@"(\x1b)[\[\]0-9;]{0,99}m");
         private string createColorString(Color Col)
         {
             return $"\x1b[38;2;{Col.R};{Col.G};{Col.B}m";
         }
 
-        private static int lastSet = 0;
-        private void setWindow()
+        static int prevY = 0;
+        internal static void setWindow()
         {
             // fucking aids
             int y = CursorY - (Console.WindowHeight - DeadspaceBottom);
-            if (DeadspaceBottom > 0 && y > 0 && y > lastSet)
-            {
-                lastSet = y;
+            if (DeadspaceBottom > 0 && y > 0)
                 Console.SetWindowPosition(0, y);
-                Debug.WriteLine(y);
-            }
+            else if (DeadspaceBottom == 0)
+                prevY = Console.WindowTop;
         }
 
         private void workLoop()
@@ -661,6 +710,8 @@ namespace Veylib.CLIUI
                     // make sure theres work to do
                     if (WriteQueue.Count == 0)
                         continue;
+
+                    setWindow();
 
                     // get and remove the properties from the list
                     int index = 0;
@@ -703,13 +754,10 @@ namespace Veylib.CLIUI
                         if (properties.ColoringGroups.Count == 1 && !properties.NoNewLine) // make sure that theres one coloring group and tha
                             CursorY++;
 
-                        setWindow();
                         Console.WriteLine();
                         WriteQueue.RemoveAt(index);
                         continue;
                     }
-
-                    setWindow();
 
                     // increase the color rotation
                     StartProperty.ColorRotation += StartProperty.ColorRotationOffset;
@@ -731,7 +779,11 @@ namespace Veylib.CLIUI
 
 
                     // set cursor position
-                    if (properties.YCood == null)
+                    if (properties.DockOffset.Top > 0)
+                        Console.SetCursorPosition(0, Console.WindowTop + properties.DockOffset.Top);
+                    else if (properties.DockOffset.Bottom > 0)
+                        Console.SetCursorPosition(0, Console.WindowTop + Console.WindowHeight - properties.DockOffset.Bottom);
+                    else if (properties.YCood == null)
                         Console.SetCursorPosition(0, CursorY);
                     else
                         Console.SetCursorPosition(0, properties.YCood ?? 0);
@@ -757,9 +809,16 @@ namespace Veylib.CLIUI
                         int totalLen = 0;
                         foreach (var grp in properties.ColoringGroups)
                         {
+                            foreach (Match match in colorStringRegex.Matches(grp[1].ToString().ToLower()))
+                            {
+                                Debug.WriteLine("matlen" + match.Length);
+                                totalLen -= match.Length;
+                            }
+
                             totalLen += grp[1].ToString().Length;
                         }
-                        Console.Write(new string(' ', (int)Math.Round((decimal)(Console.BufferWidth / 2) - (totalLen / 2)) - (properties.Time != null && properties.Time.Show ? properties.Time.Text.Length + 3 : 0)));
+                        int cnt = (int)Math.Round((decimal)(Console.BufferWidth / 2) - (totalLen / 2)) - (properties.Time != null && properties.Time.Show ? properties.Time.Text.Length + 3 : 0);
+                        Console.Write(new string(' ', cnt < 0 ? 0 : cnt));
                     }
 
                     if (!properties.HorizontalRainbow && !properties.VerticalRainbow)
@@ -851,6 +910,8 @@ namespace Veylib.CLIUI
                         if (StartProperty.UserInformation.ShowNextLine && WriteQueue.Count == 0)
                             PrintHeader();
                     }
+
+                    setWindow();
 
                     // evnet
                     ItemFinished?.Invoke(properties);
