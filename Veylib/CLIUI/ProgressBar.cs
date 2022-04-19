@@ -163,7 +163,7 @@ namespace Veylib.CLIUI
                     break;
             }
 
-            core.WriteLine(new Core.MessageProperties { Label = null, Time = null, NoNewLine = true, YCood = lastLineY, BypassLock = true }, new string(' ', Console.WindowWidth));
+            core.WriteLine(new Core.MessageProperties { Label = null, Time = null, NoNewLine = true, DockOffset = new Core.DockOffset { Bottom = 3 }, BypassLock = true }, new string(' ', Console.WindowWidth));
 
             lastLineY = Console.WindowTop + Console.WindowHeight - CurrentSettings.Style.DockOffset;
             var mp = new Core.MessageProperties
@@ -172,7 +172,7 @@ namespace Veylib.CLIUI
                 ColoringGroups = new List<object[]> { new object[] { CurrentSettings.Style.EdgeColor, $"{new string(' ', CurrentSettings.Style.SideSpace)}[" }, new object[] { CurrentSettings.Style.FillingColor, pb.Substring(CurrentSettings.Style.SideSpace + 1, InnerLength) }, new object[] { CurrentSettings.Style.EdgeColor, "]" } },
                 Label = null,
                 Time = null,
-                YCood = lastLineY,
+                DockOffset = new Core.DockOffset { Bottom = 2 },
                 NoNewLine = true
             };
 
@@ -184,6 +184,7 @@ namespace Veylib.CLIUI
             }
 
             last = pb;
+            //Core.setWindow();
             core.WriteLine(mp);
         }
 
