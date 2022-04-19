@@ -66,7 +66,7 @@ namespace Veylib.CLIUI
             public bool DisplayCompletion = false;
             public int SideSpace = 5;
             public Dock Dock = Dock.Bottom;
-            public int DockOffset = 2;
+            public int DockOffset = 1;
         }
 
         public Settings CurrentSettings;
