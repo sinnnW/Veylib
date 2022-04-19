@@ -8,8 +8,8 @@ namespace Veylib.CLIUI
     public class SelectionMenu
     {
         private readonly Core core = Core.GetInstance();
-        private readonly int hue;
-        private readonly int curY;
+        private int hue;
+        private int curY;
 
         public List<string> Options = new List<string>();
         public Settings CurrentSettings;
@@ -47,14 +47,35 @@ namespace Veylib.CLIUI
         public SelectionMenu(params string[] opts)
         {
             CurrentSettings = new Settings();
-            hue = Core.StartProperty.ColorRotation;
-            curY = Core.CursorY + opts.Length + 1;
-            foreach (var opt in opts)
-                Options.Add(opt);
+            Options.AddRange(opts);
+        }
+
+        public SelectionMenu(Settings settings)
+        {
+            CurrentSettings = settings;
+        }
+
+        public SelectionMenu(Settings settings, params string[] opts)
+        {
+            CurrentSettings = settings;
+            Options.AddRange(opts);
+        }
+
+        public void AddOption(string option)
+        {
+            Options.Add(option);
+        }
+
+        public void RemoveOption(string option)
+        {
+            Options.Remove(option);
         }
 
         public string Activate()
         {
+            hue = Core.StartProperty.ColorRotation;
+            curY = Core.CursorY + Options.Count + 1;
+
             Core.newItemLock = true;
             var cursorVisible = Console.CursorVisible;
             Console.CursorVisible = false;
@@ -97,7 +118,7 @@ namespace Veylib.CLIUI
                 if (x == Index)
                     core.WriteLine(props, CurrentSettings.Style.PreOptionHighlightColor, CurrentSettings.Style.PreOptionHighlightFormatTags, CurrentSettings.Style.PreOptionText, Core.Formatting.Reset, CurrentSettings.Style.SelectionHighlightColor, CurrentSettings.Style.SelectionFormatTags, Options[x]);
                 else
-                    core.WriteLine(props, CurrentSettings.Style.PreOptionColor, CurrentSettings.Style.PreOptionFormatTags, CurrentSettings.Style.PreOptionText, Core.Formatting.Reset, Options[x]);
+                    core.WriteLine(props, CurrentSettings.Style.PreOptionColor, CurrentSettings.Style.PreOptionFormatTags, CurrentSettings.Style.PreOptionText, Core.Formatting.Reset, CurrentSettings.Style.NeutralColor, Options[x]);
             }
         }
     }
