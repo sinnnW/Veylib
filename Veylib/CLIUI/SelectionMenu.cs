@@ -41,7 +41,7 @@ namespace Veylib.CLIUI
                             Index--;
                         break;
                     case ConsoleKey.Enter:
-                        var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - Options.Count + Index };
+                        var props = new Core.MessageProperties { Label = null, Time = null, BypassLock = true, YCood = Core.CursorY - Options.Count + Index + 2 };
                         core.WriteLine(props, "> ", Color.Lime, Core.Formatting.Underline, Options[Index]);
 
                         Core.StartProperty.ColorRotation = hue;
