@@ -115,12 +115,12 @@ namespace Veylib.CLIUI
             public void UpdateColor()
             {
                 // Make sure that there isn't already an assigned color
-                if (Color == null && StartProperty.DefaultMessageTime.Color == null)
+                if (Color == Color.Empty && StartProperty.DefaultMessageTime?.Color == Color.Empty)
                 {
                     ColorManagement.GetInstance().HsvToRgb(StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
                     Color = Color.FromArgb(r, g, b);
                 }
-                else if (StartProperty.DefaultMessageTime.Color != null)
+                else if (StartProperty.DefaultMessageTime?.Color != Color.Empty)
                     Color = StartProperty.DefaultMessageTime.Color;
 
 
@@ -289,8 +289,15 @@ namespace Veylib.CLIUI
 
                 // Set the time and label
                 // Clone so that we can have a default time and message style
-                Time = StartProperty.DefaultMessageTime.Clone();
-                Label = StartProperty.DefaultMessageLabel.Clone();
+                //if (StartProperty.DefaultMessageTime != null)
+                    Time = StartProperty.DefaultMessageTime.Clone();
+                //else
+                    //Time = new MessagePropertyTime();
+
+                //if ( StartProperty.DefaultMessageLabel != null)
+                    Label = StartProperty.DefaultMessageLabel.Clone();
+                //else
+                    //Label = new MessagePropertyLabel();
             }
 
             /// <summary>
@@ -1160,7 +1167,7 @@ namespace Veylib.CLIUI
         /// </summary>
         /// <param name="color">Color</param>
         /// <returns></returns>
-        private string createColorString(Color color)
+        internal string createColorString(Color color)
         {
             return $"\x1b[38;2;{color.R};{color.G};{color.B}m";
         }
