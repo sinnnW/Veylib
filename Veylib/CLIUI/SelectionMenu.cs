@@ -76,7 +76,7 @@ namespace Veylib.CLIUI
             hue = Core.StartProperty.ColorRotation;
             curY = Core.CursorY + Options.Count + 1;
 
-            Core.newItemLock = true;
+            Core.NewItemLock = true;
             var cursorVisible = Console.CursorVisible;
             Console.CursorVisible = false;
             while (true)
@@ -99,7 +99,7 @@ namespace Veylib.CLIUI
 
                         Core.StartProperty.ColorRotation = hue;
                         Core.CursorY = curY;
-                        Core.newItemLock = false;
+                        Core.NewItemLock = false;
                         Console.CursorVisible = cursorVisible;
                         return Options[Index];
                 }
