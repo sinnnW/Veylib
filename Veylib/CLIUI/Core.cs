@@ -608,6 +608,11 @@ namespace Veylib.CLIUI
             /// Offset each time something is written
             /// </summary>
             public int ColorRotationOffset = 5;
+
+            /// <summary>
+            /// Offset each for each character's color when using HorizontalRainbow property
+            /// </summary>
+            public int HorizontalColorRotationOffset = 2;
         }
 
         private static Core inst = null;
@@ -967,11 +972,11 @@ namespace Veylib.CLIUI
         public void ShowSplash()
         {
             // If there is no splash screen, just return
-            if (StartProperty.SplashScreen == null)
+            if (StartProperty.SplashScreen == null || StartProperty.LogoString == null)
                 return;
 
             // Pause the console so that no one will try to print
-            var paused = PauseConsole;
+            bool paused = PauseConsole;
             PauseConsole = true;
 
             // Disable cursor visibility
@@ -982,16 +987,16 @@ namespace Veylib.CLIUI
             Clear();
 
             // Find out how much needs to go into centering the logo
-            var centerAmnt = 0;
+            int centerAmnt = 0;
             foreach (var line in StartProperty.LogoString.Split('\n'))
             {
-                // Amount of center needed for a single line
-                var tmp = (Console.WindowWidth / 2) - (line.Length / 2);
-
                 // If it's less than, it needs to be updated
-                if (centerAmnt < tmp)
-                    centerAmnt = tmp;
+                if (line.Length > centerAmnt)
+                    centerAmnt = line.Length;
             }
+
+            // Division to find out how many spaces would need to be inserted
+            centerAmnt = (Console.BufferWidth / 2) - (centerAmnt / 2);
 
             // Auto generation is handled here
             if (StartProperty.SplashScreen.AutoGenerate)
@@ -1002,6 +1007,9 @@ namespace Veylib.CLIUI
                 // Printing the logo out
                 foreach (var line in StartProperty.LogoString.Split('\n'))
                     WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true, BypassLock = true }, $"{new string(' ', centerAmnt)}{line}");
+
+                // Empty line
+                WriteLine(new MessageProperties { Label = null, Time = null, BypassLock = true }, "");
 
                 // Writing who it was made by
                 WriteLine(new MessageProperties { Label = null, Time = null, HorizontalRainbow = true, Center = true, BypassLock = true }, $"Made by {StartProperty.Author.Name}");
@@ -1356,7 +1364,7 @@ namespace Veylib.CLIUI
                             Console.Write($"{createColorString(Color.FromArgb(r, g, b))}{c}");
 
                             // Increase color rotation just one.
-                            StartProperty.ColorRotation++;
+                            StartProperty.ColorRotation += StartProperty.HorizontalColorRotationOffset;
                         }
                     } // Vertical rainbow work
                     else if (properties.VerticalRainbow)
