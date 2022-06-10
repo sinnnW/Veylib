@@ -53,6 +53,16 @@ namespace Veylib.CLIUI
             public static readonly string Blink = "\x1b[5m";
 
             /// <summary>
+            /// Create a color tag from a color
+            /// </summary>
+            /// <param name="color">Color</param>
+            /// <returns></returns>
+            public static string CreateColorString(Color color)
+            {
+                return $"\x1b[38;2;{color.R};{color.G};{color.B}m";
+            }
+
+            /// <summary>
             /// Create a horizontal divider in the screen
             /// </summary>
             /// <returns>Divider</returns>
@@ -66,11 +76,11 @@ namespace Veylib.CLIUI
             /// </summary>
             /// <param name="Title">Title</param>
             /// <returns>Divider with title</returns>
-            public static string CreateDivider(string Title)
+            public static string CreateDivider(string title)
             {
                 var str = CreateDivider();
                 var half = str.Substring(0, (int)Math.Round((decimal)str.Length / 2));
-                return $"{half} {Title} {half}";
+                return $"{half} {title} {half}";
             }
 
             /// <summary>
@@ -78,9 +88,9 @@ namespace Veylib.CLIUI
             /// </summary>
             /// <param name="Input">Input</param>
             /// <returns>Centered string</returns>
-            public static string Center(string Input)
+            public static string Center(string input)
             {
-                return $"{new string(' ', (Console.BufferWidth / 2) - (Input.Length / 2))}{Input}";
+                return $"{new string(' ', (Console.BufferWidth / 2) - (input.Length / 2))}{input}";
             }
 
             /// <summary>
@@ -92,6 +102,28 @@ namespace Veylib.CLIUI
             public static string Space(string Input, int Length)
             {
                 return $"{Input}{new string(' ', (Length - Input.Length > 0 ? Length - Input.Length : 0))}";
+            }
+
+            public static string HorizontalRainbow(string input, int rotation = 0, int? offset = null)
+            {
+                if (offset == null)
+                    offset = StartProperty?.HorizontalColorRotationOffset ?? 2;
+
+                var sb = new StringBuilder();
+                foreach (char c in input)
+                {
+                    ColorManagement.GetInstance().HsvToRgb(rotation, 1, 1, out int r, out int g, out int b);
+                    sb.Append(CreateColorString(Color.FromArgb(r, g, b)) + c);
+                    rotation += offset ?? 0;
+                }
+
+                return sb.ToString();
+            }
+
+            public static string VisibleString(string input)
+            {
+                var regex = new Regex(@"/\\u[0-9]{1,3}b\[38;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}m/gi/");
+                return regex.Replace(input, "");
             }
         }
 
@@ -735,7 +767,7 @@ namespace Veylib.CLIUI
             if (StartProperty.LogoString != null)
                 foreach (var line in StartProperty.LogoString.Split('\n'))
                     if (line.Length > longestLen)
-                        longestLen = line.Length;
+                        longestLen = Formatting.VisibleString(line).Length;
 
             // Set console horizontal size, 115, or longest logo line, whichever is longer
             if (StartProperty.AutoSize)
@@ -817,9 +849,9 @@ namespace Veylib.CLIUI
                 Thread.Sleep(5);
 
             // Just formatting
-            Console.Write($"\r{createColorString(StartProperty.UserInformation.UserColor)}{StartProperty.UserInformation.Username}");
+            Console.Write($"\r{Formatting.CreateColorString(StartProperty.UserInformation.UserColor)}{StartProperty.UserInformation.Username}");
             Console.ResetColor();
-            Console.Write($"@{createColorString(StartProperty.UserInformation.HostColor)}{StartProperty.UserInformation.Host}");
+            Console.Write($"@{Formatting.CreateColorString(StartProperty.UserInformation.HostColor)}{StartProperty.UserInformation.Host}");
             Console.ResetColor();
             Console.Write(" #~ ");
 
@@ -941,7 +973,7 @@ namespace Veylib.CLIUI
             // Get all the segments of the dividers
             string div = Formatting.CreateDivider();
             string divHalf = div.Substring(0, (int)Math.Round((decimal)div.Length / 2));
-            string divColor = StartProperty.MOTD.DividerColor == null ? "" : createColorString(StartProperty.MOTD.DividerColor ?? Color.White);
+            string divColor = StartProperty.MOTD.DividerColor == null ? "" : Formatting.CreateColorString(StartProperty.MOTD.DividerColor ?? Color.White);
 
             // Horizontal rainbow only if a color is not supplied
             bool rb = false;
@@ -1171,16 +1203,6 @@ namespace Veylib.CLIUI
         Regex colorStringRegex = new Regex(@"(\x1b)[\[\]0-9;]{0,99}m");
 
         /// <summary>
-        /// Create a color tag from a color
-        /// </summary>
-        /// <param name="color">Color</param>
-        /// <returns></returns>
-        internal string createColorString(Color color)
-        {
-            return $"\x1b[38;2;{color.R};{color.G};{color.B}m";
-        }
-
-        /// <summary>
         /// Previous Y on set
         /// </summary>
         static int prevY = 0;
@@ -1296,7 +1318,7 @@ namespace Veylib.CLIUI
                         // Write
                         Console.ResetColor();
                         Console.Write("\r[");
-                        Console.Write($"{createColorString(properties.Time.Color)}{properties.Time.Text}");
+                        Console.Write($"{Formatting.CreateColorString(properties.Time.Color)}{properties.Time.Text}");
                         Console.ResetColor();
                         Console.Write("] ");
                     }
@@ -1345,7 +1367,7 @@ namespace Veylib.CLIUI
                                 clr = (Color)grp[0];
 
                             // Set the color in console
-                            Console.Write($"{createColorString(clr)}{grp[1]}");
+                            Console.Write($"{Formatting.CreateColorString(clr)}{grp[1]}");
                         }
                     } // Horizontal rainbow work
                     else if (properties.HorizontalRainbow)
@@ -1361,7 +1383,7 @@ namespace Veylib.CLIUI
                         foreach (var c in sb.ToString())
                         {
                             ColorManagement.GetInstance().HsvToRgb(StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
-                            Console.Write($"{createColorString(Color.FromArgb(r, g, b))}{c}");
+                            Console.Write($"{Formatting.CreateColorString(Color.FromArgb(r, g, b))}{c}");
 
                             // Increase color rotation just one.
                             StartProperty.ColorRotation += StartProperty.HorizontalColorRotationOffset;
@@ -1378,7 +1400,7 @@ namespace Veylib.CLIUI
 
                         // Tag each line
                         ColorManagement.GetInstance().HsvToRgb(StartProperty.ColorRotation, 1, 1, out int r, out int g, out int b);
-                        Console.Write($"{createColorString(Color.FromArgb(r, g, b))}{sb}");
+                        Console.Write($"{Formatting.CreateColorString(Color.FromArgb(r, g, b))}{sb}");
                     }
 
                     // Adjust the cursors Y position, used for word wrap, calculates based on length and buffer width
@@ -1402,7 +1424,7 @@ namespace Veylib.CLIUI
                         // Formatting
                         Console.ResetColor();
                         Console.Write(" [");
-                        Console.Write($"{createColorString(properties.Label.Color)}{properties.Label.Text}");
+                        Console.Write($"{Formatting.CreateColorString(properties.Label.Color)}{properties.Label.Text}");
                         Console.ResetColor();
                         Console.Write("]");
                     }
@@ -1479,7 +1501,7 @@ namespace Veylib.CLIUI
 
             // Set the color if enabled
             if (inputColor != null)
-                Console.Write(createColorString(inputColor ?? Color.White));
+                Console.Write(Formatting.CreateColorString(inputColor ?? Color.White));
 
             // Return the user input
             return Console.ReadLine();
@@ -1503,7 +1525,7 @@ namespace Veylib.CLIUI
 
             // Set the input color if enabled
             if (inputColor != null)
-                Console.Write(createColorString(inputColor ?? Color.White));
+                Console.Write(Formatting.CreateColorString(inputColor ?? Color.White));
 
             // While loop so we can readkey and set * after each char
             while (true)
