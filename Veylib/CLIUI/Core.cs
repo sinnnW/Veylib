@@ -122,7 +122,7 @@ namespace Veylib.CLIUI
 
             public static string VisibleString(string input)
             {
-                var regex = new Regex(@"/\\u[0-9]{1,3}b\[38;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}m/gi/");
+                var regex = new Regex(@"\\u[0-9]{1,3}b\[38;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}m");
                 return regex.Replace(input, "");
             }
         }
