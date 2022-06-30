@@ -1,26 +1,25 @@
 <div align="center">
 
 # Veylib
-A general purpose library for my applications
+A lightweight, simplistic, and versitile library for C# applications
 
 [![wakatime](https://wakatime.com/badge/user/0ccf7ed5-30a2-486d-8ea4-6b0ca58cd9c9/project/3b474118-cf1e-4b6a-bba2-1c30ece40015.svg)](https://wakatime.com/badge/user/0ccf7ed5-30a2-486d-8ea4-6b0ca58cd9c9/project/3b474118-cf1e-4b6a-bba2-1c30ece40015)
+![Lifecycle](https://img.shields.io/badge/lifecycle-developing-green)
 
 </div>
 
-## Issues?
-Open an issue with the bug report template [here](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug)
+## Description
+This library aims to be the most versitile and lightweight library with the primary goal of aiding in the pursuit of simple application development with customizability. We try to make this library as lightweight as possible by keeping the amount of external dependencies low or by thinking outside of the box.
 
-## Dependencies
-* Newtonsoft.Json
+## Issues / support?
+You can either create an issue if you would like to report an issue in the [Issues section](https://github.com/verlox/Veylib/issues) using the [template](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug), or try and get help trying to figure out the issue in the [Discord](https://discord.gg/efVxVFKuVu) 
 
-## Projects that use this
-* [Lithium](https://github.com/verlox/Lithium-Nuker-2)
+## Previews
+![Lithium](https://github.com/verlox/Veylib/Previews/master/Previews/lithium.png)
+![Radium](https://github.com/verlox/Veylib/Previews/master/Previews/radium.png)
 
-## Support
-If you require support, join discord.gg/arsenic
-
-## Pull requests
-Pull requests are acceptable
+## Contributions
+Pull requests are welcome and will always be reviewed and testing before being either accepted or rejected. If you want to see some code that could be improved on or even redone, feel free to open a pull request.
 
 ## Documentation
-~~Soon. No really, actually.~~ Maybe?
+[In progress!](https://github.com/verlox/Veylib/wiki)
