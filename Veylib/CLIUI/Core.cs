@@ -334,12 +334,12 @@ namespace Veylib.CLIUI
                 // Set the time and label
                 // Clone so that we can have a default time and message style
                 //if (StartProperty.DefaultMessageTime != null)
-                    Time = StartProperty.DefaultMessageTime.Clone();
+                    Time = StartProperty.DefaultMessageTime?.Clone();
                 //else
                     //Time = new MessagePropertyTime();
 
                 //if ( StartProperty.DefaultMessageLabel != null)
-                    Label = StartProperty.DefaultMessageLabel.Clone();
+                    Label = StartProperty.DefaultMessageLabel?.Clone();
                 //else
                     //Label = new MessagePropertyLabel();
             }
