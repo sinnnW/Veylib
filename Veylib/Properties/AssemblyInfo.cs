@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Veylib")]
-[assembly: AssemblyDescription("General purpose library for .NET framework applications")]
+[assembly: AssemblyDescription("Veylib is a general-purpose library that aims to bring versatility and simplicity to the same table.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Veylib")]
