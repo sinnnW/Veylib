@@ -435,33 +435,33 @@ namespace Veylib.CLIUI
         /// <summary>
         /// Command header properties
         /// </summary>
-        public class StartupInterfaceProperties
-        {
-            /// <summary>
-            /// Username to show
-            /// </summary>
-            public string Username = Environment.UserName;
+        //public class StartupInterfaceProperties
+        //{
+        //    /// <summary>
+        //    /// Username to show
+        //    /// </summary>
+        //    public string Username = Environment.UserName;
 
-            /// <summary>
-            /// Username color
-            /// </summary>
-            public Color UserColor = Color.FromArgb(3, 84, 204);
+        //    /// <summary>
+        //    /// Username color
+        //    /// </summary>
+        //    public Color UserColor = Color.FromArgb(3, 84, 204);
 
-            /// <summary>
-            /// Host to show
-            /// </summary>
-            public string Host = Environment.MachineName;
+        //    /// <summary>
+        //    /// Host to show
+        //    /// </summary>
+        //    public string Host = Environment.MachineName;
 
-            /// <summary>
-            /// Host color to show
-            /// </summary>
-            public Color HostColor = Color.FromArgb(100, 7, 247);
+        //    /// <summary>
+        //    /// Host color to show
+        //    /// </summary>
+        //    public Color HostColor = Color.FromArgb(100, 7, 247);
 
-            /// <summary>
-            /// Automatically print on the next line
-            /// </summary>
-            public bool ShowNextLine = false;
-        }
+        //    /// <summary>
+        //    /// Automatically print on the next line
+        //    /// </summary>
+        //    public bool ShowNextLine = false;
+        //}
 
         /// <summary>
         /// Author properties for MOTD
@@ -576,7 +576,7 @@ namespace Veylib.CLIUI
             {
                 Title = new StartupConsoleTitleProperties();
                 Author = new StartupAuthorProperties();
-                UserInformation = new StartupInterfaceProperties();
+                //UserInformation = new StartupInterfaceProperties();
                 SplashScreen = new StartupSpashScreenProperties();
                 DefaultMessageLabel = new MessagePropertyLabel();
                 DefaultMessageTime = new MessagePropertyTime();
@@ -596,7 +596,7 @@ namespace Veylib.CLIUI
             /// <summary>
             /// Command header properties
             /// </summary>
-            public StartupInterfaceProperties UserInformation;
+            //public StartupInterfaceProperties UserInformation;
             
             /// <summary>
             /// Splash screen properties
@@ -832,9 +832,9 @@ namespace Veylib.CLIUI
                 WriteQueue.Clear();
 
             // Turn off showing the next line
-            prevTog = StartProperty.UserInformation.ShowNextLine;
-            if (prevTog)
-                StartProperty.UserInformation.ShowNextLine = false;
+            //prevTog = StartProperty.UserInformation.ShowNextLine;
+            //if (prevTog)
+            //    StartProperty.UserInformation.ShowNextLine = false;
 
             // Reset the current color rotation to the original one
             StartProperty.ColorRotation = colorRotationStart;
@@ -854,22 +854,22 @@ namespace Veylib.CLIUI
         /// <summary>
         /// Print the command header
         /// </summary>
-        public void PrintHeader()
-        {
-            // Make sure nothing is going to mess it up
-            while (WriteQueue.Count > 0)
-                Thread.Sleep(5);
+        //public void PrintHeader()
+        //{
+        //    // Make sure nothing is going to mess it up
+        //    while (WriteQueue.Count > 0)
+        //        Thread.Sleep(5);
 
-            // Just formatting
-            Console.Write($"\r{Formatting.CreateColorString(StartProperty.UserInformation.UserColor)}{StartProperty.UserInformation.Username}");
-            Console.ResetColor();
-            Console.Write($"@{Formatting.CreateColorString(StartProperty.UserInformation.HostColor)}{StartProperty.UserInformation.Host}");
-            Console.ResetColor();
-            Console.Write(" #~ ");
+        //    // Just formatting
+        //    Console.Write($"\r{Formatting.CreateColorString(StartProperty.UserInformation.UserColor)}{StartProperty.UserInformation.Username}");
+        //    Console.ResetColor();
+        //    Console.Write($"@{Formatting.CreateColorString(StartProperty.UserInformation.HostColor)}{StartProperty.UserInformation.Host}");
+        //    Console.ResetColor();
+        //    Console.Write(" #~ ");
 
-            // Update var for internal processing
-            HeaderPrintedLast = true;
-        }
+        //    // Update var for internal processing
+        //    HeaderPrintedLast = true;
+        //}
 
         /// <summary>
         /// Get version from AssemblyInfo, if you use '*' in the file, it will auto increment.
@@ -1007,9 +1007,9 @@ namespace Veylib.CLIUI
             WriteLine(new MessageProperties { HorizontalRainbow = rb, Label = null, Time = null, Center = true }, $"{divColor}{divHalf} MOTD {divHalf}");
 
             // Show the command header after if enabled
-            if (StartProperty.UserInformation.ShowNextLine)
-                WriteLine(new MessageProperties { ShowHeaderAfter = true });
-            else
+            //if (StartProperty.UserInformation.ShowNextLine)
+            //    WriteLine(new MessageProperties { ShowHeaderAfter = true });
+            //else
                 WriteLine();
         }
 
@@ -1279,7 +1279,7 @@ namespace Veylib.CLIUI
                     }
                     else if (properties.ShowHeaderAfter && properties.ColoringGroups != null && properties.ColoringGroups.Count == 0)
                     {
-                        PrintHeader();
+                        //PrintHeader();
                         WriteQueue.RemoveAt(index);
                         continue;
                     }
@@ -1467,8 +1467,8 @@ namespace Veylib.CLIUI
                         QueueCleared?.Invoke();
 
                     // If the command header is not blank, write it
-                    if (StartProperty.UserInformation != null && StartProperty.UserInformation.ShowNextLine && WriteQueue.Count == 0)
-                            PrintHeader();
+                    //if (StartProperty.UserInformation != null && StartProperty.UserInformation.ShowNextLine && WriteQueue.Count == 0)
+                    //        PrintHeader();
 
                     // Finally reset scroll again
                     setWindow();
