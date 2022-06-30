@@ -15,8 +15,8 @@ This library aims to be the most versitile and lightweight library with the prim
 You can either create an issue if you would like to report an issue in the [Issues section](https://github.com/verlox/Veylib/issues) using the [template](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug), or try and get help trying to figure out the issue in the [Discord](https://discord.gg/efVxVFKuVu) 
 
 ## Previews
-![Lithium](https://github.com/verlox/Veylib/Previews/master/Previews/lithium.png)
-![Radium](https://github.com/verlox/Veylib/Previews/master/Previews/radium.png)
+![Lithium](https://raw.githubusercontent.com/verlox/Veylib/master/Previews/lithium.png)
+![Radium](https://raw.githubusercontent.com/verlox/Veylib/master/Previews/radium.png)
 
 ## Contributions
 Pull requests are welcome and will always be reviewed and testing before being either accepted or rejected. If you want to see some code that could be improved on or even redone, feel free to open a pull request.
