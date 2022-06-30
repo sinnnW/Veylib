@@ -3,3 +3,4 @@
 .vscode/
 Veylib/bin
 Veylib/obj
+*.nupkg
