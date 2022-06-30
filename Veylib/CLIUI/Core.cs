@@ -138,7 +138,10 @@ namespace Veylib.CLIUI
             /// <returns>Cloned self</returns>
             public MessagePropertyTime Clone()
             {
-                return (MessagePropertyTime)MemberwiseClone();
+                if (this == null)
+                    return null;
+                else
+                    return (MessagePropertyTime)MemberwiseClone();
             }
 
             /// <summary>
@@ -154,8 +157,14 @@ namespace Veylib.CLIUI
                 }
                 else if (StartProperty.DefaultMessageTime?.Color != Color.Empty)
                     Color = StartProperty.DefaultMessageTime.Color;
+            }
 
-
+            /// <summary>
+            /// Update the timestamp to be accurate
+            /// </summary>
+            public void UpdateTime()
+            {
+                Text = DateTime.Now.ToString("HH:mm:ss.ff");
             }
 
             /// <summary>
@@ -185,7 +194,10 @@ namespace Veylib.CLIUI
             /// <returns>Cloned self</returns>
             public MessagePropertyLabel Clone()
             {
-                return (MessagePropertyLabel)MemberwiseClone();
+                if (this == null)
+                    return null;
+                else
+                    return (MessagePropertyLabel)MemberwiseClone();
             }
 
             /// <summary>
@@ -959,10 +971,10 @@ namespace Veylib.CLIUI
             WriteLine();
 
             // If an MOTD is supplied, print it
-            if (StartProperty.MOTD != null && StartProperty.MOTD.Text.Length > 0)
+            //if (StartProperty.MOTD != null && StartProperty.MOTD.Text.Length > 0)
                 PrintMOTD();
-            else if (prevTog)
-                StartProperty.UserInformation.ShowNextLine = true;
+            //else if (prevTog)
+                //StartProperty.UserInformation.ShowNextLine = true;
         }
 
         /// <summary>
@@ -970,6 +982,9 @@ namespace Veylib.CLIUI
         /// </summary>
         public void PrintMOTD()
         {
+            if (StartProperty.MOTD.Text == null)
+                return;
+
             // Get all the segments of the dividers
             string div = Formatting.CreateDivider();
             string divHalf = div.Substring(0, (int)Math.Round((decimal)div.Length / 2));
@@ -1314,6 +1329,7 @@ namespace Veylib.CLIUI
                     {
                         // Update the coloring
                         properties.Time.UpdateColor();
+                        properties.Time.UpdateTime();
 
                         // Write
                         Console.ResetColor();
