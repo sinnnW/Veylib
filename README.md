@@ -7,6 +7,9 @@ A general purpose library for my applications
 
 </div>
 
+## Issues?
+Open an issue with the bug report template [here](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug)
+
 ## Dependencies
 * Newtonsoft.Json
 
@@ -20,4 +23,4 @@ If you require support, join discord.gg/arsenic
 Pull requests are acceptable
 
 ## Documentation
-Soon. No really, actually.
+~~Soon. No really, actually.~~ Maybe?
