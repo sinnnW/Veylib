@@ -51,10 +51,10 @@
     <Compile Include="Authentication\Subscription.cs" />
     <Compile Include="Authentication\User.cs" />
     <Compile Include="Authentication\Vars.cs" />
-    <Compile Include="CLIUI\AsciiTable.cs" />
-    <Compile Include="CLIUI\Core.cs" />
-    <Compile Include="CLIUI\ProgressBar.cs" />
-    <Compile Include="CLIUI\SelectionMenu.cs" />
+    <Compile Include="ICLI\AsciiTable.cs" />
+    <Compile Include="ICLI\Core.cs" />
+    <Compile Include="ICLI\ProgressBar.cs" />
+    <Compile Include="ICLI\SelectionMenu.cs" />
     <Compile Include="ColorManagement.cs" />
     <Compile Include="DependencyControl.cs" />
     <Compile Include="English\English.cs" />
