@@ -671,6 +671,7 @@ namespace Veylib.ICLI
         }
 
         // Import all DLLs required for console modification
+        // https://stackoverflow.com/a/43321133/14257203
         [DllImport("kernel32.dll")]
         static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
         [DllImport("kernel32.dll")]
@@ -765,6 +766,7 @@ namespace Veylib.ICLI
             colorRotationStart = StartProperty.ColorRotation;
 
             // Set the console mode to accept color tags
+            // https://stackoverflow.com/a/43321133/14257203
             var Handle = GetStdHandle(-11);
             uint Mode;
             GetConsoleMode(Handle, out Mode);
@@ -1496,7 +1498,7 @@ namespace Veylib.ICLI
         /// <param name="inputColor">Input color</param>
         /// <param name="startingPos">Starting position</param>
         /// <returns>User input</returns>
-        public string ReadLine(string pre = "", Color? inputColor = null, int startingPos = 0)
+        public string ReadLine(string pre = null, Color? inputColor = null, int startingPos = 0)
         {
             // Make sure nothing is being written
             while (WriteQueue.Count > 0)
@@ -1513,7 +1515,8 @@ namespace Veylib.ICLI
             CursorY++;
 
             // Write the pretext
-            Console.Write(pre);
+            if (pre != null)
+                Console.Write(pre);
 
             // Set the color if enabled
             if (inputColor != null)
