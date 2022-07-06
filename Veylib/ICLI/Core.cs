@@ -99,9 +99,9 @@ namespace Veylib.ICLI
             /// <param name="Input">Input</param>
             /// <param name="Length">Amount of space</param>
             /// <returns></returns>
-            public static string Space(string Input, int Length)
+            public static string Space(string input, int length)
             {
-                return $"{Input}{new string(' ', (Length - Input.Length > 0 ? Length - Input.Length : 0))}";
+                return $"{input}{new string(' ', (length - input.Length > 0 ? length - input.Length : 0))}";
             }
 
             public static string HorizontalRainbow(string input, int rotation = 0, int? offset = null)
