@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>Veylib</id>
+    <version>2.2.0</version>
+    <authors>verlox</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/verlox/Veylib/</projectUrl>
+    <description>Veylib is a general-purpose library that aims to bring versatility and simplicity to the same table.</description>
+    <releaseNotes>Release!</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>verlox veylib csharp library console .net</tags>
+  </metadata>
+</package>

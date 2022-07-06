@@ -6,7 +6,7 @@ using System.Linq;
 
 // TODO: Coloring.
 
-namespace Veylib.CLIUI
+namespace Veylib.ICLI
 {
     /// <summary>
     /// A customizable progress bar for console applications

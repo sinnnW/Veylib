@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 
-namespace Veylib.CLIUI
+namespace Veylib.ICLI
 {
     public class SelectionMenu
     {

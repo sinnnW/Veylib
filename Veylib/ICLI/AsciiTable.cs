@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 
-namespace Veylib.CLIUI
+namespace Veylib.ICLI
 {
     public class AsciiTable
     {

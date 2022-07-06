@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
  * MADE BY VERLOX [https://verlox.cc]
  */
 
-namespace Veylib.CLIUI
+namespace Veylib.ICLI
 {
     public class Core
     {
