@@ -12,7 +12,7 @@ A lightweight, simplistic, and versitile library for C# applications
 This library aims to be the most versitile and lightweight library with the primary goal of aiding in the pursuit of simple application development with customizability. We try to make this library as lightweight as possible by keeping the amount of external dependencies low or by thinking outside of the box.
 
 ## Issues / support?
-You can either create an issue if you would like to report an issue in the [Issues section](https://github.com/verlox/Veylib/issues) using the [template](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug), or try and get help trying to figure out the issue in the [Discord](https://discord.gg/efVxVFKuVu) 
+You can either create an issue if you would like to report an issue in the [Issues section](https://github.com/verlox/Veylib/issues) using the [template](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug), or try and get help trying to figure out the issue in the [Discord](https://discord.gg/arsenic) 
 
 ## Previews
 ![Lithium](https://raw.githubusercontent.com/verlox/Veylib/master/Previews/lithium.png)
