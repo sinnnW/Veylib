@@ -122,7 +122,7 @@ namespace Veylib.ICLI
 
             public static string VisibleString(string input)
             {
-                var regex = new Regex(@"\\u[0-9]{1,3}b\[38;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}m");
+                var regex = new Regex(@"\x1b\[38;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}m");
                 return regex.Replace(input, "");
             }
         }
@@ -780,14 +780,22 @@ namespace Veylib.ICLI
             int longestLen = 0;
             if (StartProperty.LogoString != null)
                 foreach (var line in StartProperty.LogoString.Split('\n'))
-                    if (line.Length > longestLen)
+                    if (Formatting.VisibleString(line).Length > longestLen)
                         longestLen = Formatting.VisibleString(line).Length;
 
             // Set console horizontal size, 115, or longest logo line, whichever is longer
             if (StartProperty.AutoSize)
             {
-                Console.WindowWidth = (longestLen < 115 ? 115 : longestLen);
-                Console.BufferWidth = Console.WindowWidth;
+                int wid = longestLen;
+
+                if (wid < 100)
+                    wid = 100;
+                
+                if (longestLen > Console.LargestWindowWidth)
+                    wid = Console.LargestWindowWidth;
+
+                Console.WindowWidth = wid;
+                Console.BufferWidth = wid;
             }
 
 
@@ -820,8 +828,6 @@ namespace Veylib.ICLI
                 };
             }
         }
-
-        bool prevTog;
 
         /// <summary>
         /// Clear the console
