@@ -88,9 +88,9 @@ namespace Veylib.ICLI
             /// </summary>
             /// <param name="Input">Input</param>
             /// <returns>Centered string</returns>
-            public static string Center(string input)
+            public static string Center(string input, int width = 0)
             {
-                return $"{new string(' ', (Console.BufferWidth / 2) - (input.Length / 2))}{input}";
+                return $"{new string(' ', (width == 0 ? Console.BufferWidth : width / 2) - (input.Length / 2))}{input}";
             }
 
             /// <summary>
@@ -114,7 +114,7 @@ namespace Veylib.ICLI
                 {
                     ColorManagement.GetInstance().HsvToRgb(rotation, 1, 1, out int r, out int g, out int b);
                     sb.Append(CreateColorString(Color.FromArgb(r, g, b)) + c);
-                    rotation += offset ?? 0;
+                    rotation += offset ?? 2;
                 }
 
                 return sb.ToString();
