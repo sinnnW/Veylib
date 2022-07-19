@@ -1053,6 +1053,10 @@ namespace Veylib.ICLI
             // Division to find out how many spaces would need to be inserted
             centerAmnt = (Console.BufferWidth / 2) - (centerAmnt / 2);
 
+            // Make sure it's still positive
+            if (centerAmnt < 0)
+                centerAmnt = 0;
+
             // Auto generation is handled here
             if (StartProperty.SplashScreen.AutoGenerate)
             {
@@ -1067,7 +1071,8 @@ namespace Veylib.ICLI
                 WriteLine(new MessageProperties { Label = null, Time = null, BypassLock = true }, "");
 
                 // Writing who it was made by
-                WriteLine(new MessageProperties { Label = null, Time = null, HorizontalRainbow = true, Center = true, BypassLock = true }, $"Made by {StartProperty.Author.Name}");
+                if (StartProperty.Author.Name != null)
+                    WriteLine(new MessageProperties { Label = null, Time = null, HorizontalRainbow = true, Center = true, BypassLock = true }, $"Made by {StartProperty.Author.Name}");
             }
 
             // The time in milliseconds it started
