@@ -568,6 +568,27 @@ namespace Veylib.ICLI
         }
 
         /// <summary>
+        /// Logo properties
+        /// </summary>
+        public class StartupLogoProperties
+        {
+            /// <summary>
+            /// The actual logo text and everything
+            /// </summary>
+            public string Text;
+
+            /// <summary>
+            /// Should it be colored vertically
+            /// </summary>
+            public bool VerticalRainbow = true;
+
+            /// <summary>
+            /// Center the logo in the console
+            /// </summary>
+            public bool AutoCenter = true;
+        }
+
+        /// <summary>
         /// Actual start properties
         /// </summary>
         public class StartupProperties
@@ -621,7 +642,7 @@ namespace Veylib.ICLI
             /// <summary>
             /// Logo as a string
             /// </summary>
-            public string LogoString;
+            public StartupLogoProperties Logo;
 
             /// <summary>
             /// Current version
@@ -778,8 +799,8 @@ namespace Veylib.ICLI
 
             // Find the longest part of the logo for auto sizing
             int longestLen = 0;
-            if (StartProperty.LogoString != null)
-                foreach (var line in StartProperty.LogoString.Split('\n'))
+            if (StartProperty.Logo.Text != null)
+                foreach (var line in StartProperty.Logo.Text.Split('\n'))
                     if (Formatting.VisibleString(line).Length > longestLen)
                         longestLen = Formatting.VisibleString(line).Length;
 
@@ -960,10 +981,19 @@ namespace Veylib.ICLI
         /// </summary>
         public void PrintLogo()
         {
+            int longest = 0;
+
             // Write each line of the logo if it's set
-            if (StartProperty.LogoString != null)
-                foreach (var line in StartProperty.LogoString.Split('\n'))
-                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, line);
+            if (StartProperty.Logo.Text != null)
+            {
+                if (StartProperty.Logo.AutoCenter)
+                    foreach (var line in StartProperty.Logo.Text.Split('\n'))
+                        if (Formatting.VisibleString(line).Length > longest)
+                            longest = Formatting.VisibleString(line).Length;
+
+                foreach (var line in StartProperty.Logo.Text.Split('\n'))
+                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, $"{new string(' ', longest)}{line}");
+            }
 
             // Print all attributions
             if (StartProperty.Author.Name != null)
@@ -979,7 +1009,7 @@ namespace Veylib.ICLI
             WriteLine();
 
             // If an MOTD is supplied, print it
-            //if (StartProperty.MOTD != null && StartProperty.MOTD.Text.Length > 0)
+            if (StartProperty.MOTD != null && StartProperty.MOTD.Text.Length > 0)
                 PrintMOTD();
             //else if (prevTog)
                 //StartProperty.UserInformation.ShowNextLine = true;
@@ -1027,7 +1057,7 @@ namespace Veylib.ICLI
         public void ShowSplash()
         {
             // If there is no splash screen, just return
-            if (StartProperty.SplashScreen == null || StartProperty.LogoString == null)
+            if (StartProperty.SplashScreen == null || StartProperty.Logo.Text == null)
                 return;
 
             // Pause the console so that no one will try to print
@@ -1043,7 +1073,7 @@ namespace Veylib.ICLI
 
             // Find out how much needs to go into centering the logo
             int centerAmnt = 0;
-            foreach (var line in StartProperty.LogoString.Split('\n'))
+            foreach (var line in StartProperty.Logo.Text.Split('\n'))
             {
                 // If it's less than, it needs to be updated
                 if (line.Length > centerAmnt)
@@ -1061,10 +1091,10 @@ namespace Veylib.ICLI
             if (StartProperty.SplashScreen.AutoGenerate)
             {
                 // Vertical centering
-                WriteLine(new MessageProperties { Label = null, Time = null, BypassLock = true }, new string('\n', (Console.WindowHeight / 2) - (StartProperty.LogoString.Split('\n').Length / 2) - (StartProperty.Author != null ? 1 : 0)));
+                WriteLine(new MessageProperties { Label = null, Time = null, BypassLock = true }, new string('\n', (Console.WindowHeight / 2) - (StartProperty.Logo.Text.Split('\n').Length / 2) - (StartProperty.Author != null ? 1 : 0)));
 
                 // Printing the logo out
-                foreach (var line in StartProperty.LogoString.Split('\n'))
+                foreach (var line in StartProperty.Logo.Text.Split('\n'))
                     WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true, BypassLock = true }, $"{new string(' ', centerAmnt)}{line}");
 
                 // Empty line
@@ -1604,12 +1634,19 @@ namespace Veylib.ICLI
         /// <param name="ms">Milliseconds</param>
         public void Delay(int ms)
         {
-            // Make sure queue is clear
-            while (WriteQueue.Count > 0)
-                Thread.Sleep(5);
+            DelayUntilReady();
 
             // Sleep
             Thread.Sleep(ms);
+        }
+        
+        /// <summary>
+        /// Delay all code execution in current thread until there is nothing left to print
+        /// </summary>
+        public void DelayUntilReady()
+        {
+            while (WriteQueue.Count > 0)
+                Thread.Sleep(5);
         }
     }
 }
