@@ -73,10 +73,12 @@ namespace Veylib.ICLI
 
         public string Activate()
         {
+            core.DelayUntilReady();
+            Core.NewItemLock = true;
+
             hue = Core.StartProperty.ColorRotation;
             curY = Core.CursorY + Options.Count + 1;
 
-            Core.NewItemLock = true;
             var cursorVisible = Console.CursorVisible;
             Console.CursorVisible = false;
             while (true)
