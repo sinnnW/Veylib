@@ -992,7 +992,7 @@ namespace Veylib.ICLI
                             longest = Formatting.VisibleString(line).Length;
 
                 foreach (var line in StartProperty.Logo.Text.Split('\n'))
-                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, $"{new string(' ', longest)}{line}");
+                    WriteLine(new MessageProperties { Label = null, Time = null, VerticalRainbow = true }, new string(' ', longest) + line);
             }
 
             // Print all attributions
