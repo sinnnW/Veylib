@@ -174,9 +174,9 @@ namespace Veylib.ICLI
         private static int tableWidth = 0;
         private static int colWidth = 0;
 
-        private static class build
+        public static class TableBuilder
         {
-            public static string topLine(List<Column> columns)
+            public static string TopLine(List<Column> columns)
             {
                 PipesDictionary.TryGetValue("downright", out char bottomright);
                 PipesDictionary.TryGetValue("downleft", out char bottomleft);
@@ -197,7 +197,7 @@ namespace Veylib.ICLI
                 return ret;
             }
 
-            public static string bottomLine(List<Column> columns)
+            public static string BottomLine(List<Column> columns)
             {
                 PipesDictionary.TryGetValue("upright", out char upright);
                 PipesDictionary.TryGetValue("upleft", out char upleft);
@@ -218,7 +218,7 @@ namespace Veylib.ICLI
                 return ret;
             }
 
-            public static string divider(List<Column> columns)
+            public static string Divider(List<Column> columns)
             {
                 PipesDictionary.TryGetValue("updownright", out char updownright);
                 PipesDictionary.TryGetValue("updownleft", out char updownleft);
@@ -253,12 +253,11 @@ namespace Veylib.ICLI
                         colWidth = cell.ToString().Length + 3;
 
             tableWidth = colWidth * Columns.Count;
-            Debug.WriteLine($"Using {tableWidth} char width");
 
             var lines = new List<string>();
 
             // top
-            lines.Add(build.topLine(Columns));
+            lines.Add(TableBuilder.TopLine(Columns));
 
             // get the up down pipe
             PipesDictionary.TryGetValue("updown", out char updown);
@@ -278,7 +277,7 @@ namespace Veylib.ICLI
             foreach (var row in Rows)
             {
                 if (Property.ShowDividers)
-                    lines.Add(build.divider(Columns));
+                    lines.Add(TableBuilder.Divider(Columns));
 
                 var strb = new StringBuilder();
                 List<string> cellsFormatted = new List<string>();
@@ -315,7 +314,7 @@ namespace Veylib.ICLI
 
 
             // bottom
-            lines.Add(build.bottomLine(Columns));
+            lines.Add(TableBuilder.BottomLine(Columns));
 
             Debug.WriteLine(string.Join("\n", lines));
 
