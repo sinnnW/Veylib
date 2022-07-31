@@ -110,8 +110,7 @@ namespace Veylib.ICLI
 
         public void Render()
         {
-            while (Core.WriteQueue.Count > 0)
-                Thread.Sleep(100);
+            core.DelayUntilReady();
 
             //renderCount++;
             for (var x = 0; x < Options.Count; x++)
