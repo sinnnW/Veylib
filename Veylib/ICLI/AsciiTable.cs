@@ -10,16 +10,9 @@ namespace Veylib.ICLI
     {
         public class ColorProperties
         {
-            public ColorProperties()
-            {
-                HeaderColor = Color.White;
-                ContentColor = Color.WhiteSmoke;
-                PipeColor = Color.White;
-            }
-
-            public Color HeaderColor;
-            public Color ContentColor;
-            public Color PipeColor;
+            public Color HeaderColor = Color.White;
+            public Color ContentColor = Color.WhiteSmoke;
+            public Color PipeColor = Color.White;
 
             public bool RainbowDividers = false;
         }
