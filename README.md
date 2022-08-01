@@ -14,6 +14,9 @@ This library aims to be the most versitile and lightweight library with the prim
 ## Issues / support?
 You can either create an issue if you would like to report an issue in the [Issues section](https://github.com/verlox/Veylib/issues) using the [template](https://github.com/verlox/Veylib/issues/new?assignees=&labels=bug&template=bug_report.md&title=Bug), or try and get help trying to figure out the issue in the [Discord](https://discord.gg/arsenic) 
 
+## Roadmap
+There is a in progress roadmap [here](https://trello.com/b/sGHH6Rjr/veylib) on Trello of upcoming features/updates.
+
 ## Previews
 ![Lithium](https://raw.githubusercontent.com/verlox/Veylib/master/Previews/lithium.png)
 ![Radium](https://raw.githubusercontent.com/verlox/Veylib/master/Previews/radium.png)
