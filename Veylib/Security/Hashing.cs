@@ -2,6 +2,9 @@
 using System.Text;
 using System.IO;
 using System;
+using System.Collections.Generic;
+using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace Veylib.Security
 {
@@ -38,6 +41,24 @@ namespace Veylib.Security
             var stream = File.OpenRead(filepath);
 
             return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
+        }
+
+        /// <summary>
+        /// Cache a list of checksums in the registry
+        /// </summary>
+        /// <param name="checksums">Dictionary of checksums</param>
+        public static void CacheChecksums(Dictionary<string, string> checksums)
+        {
+            // Open subkey
+            var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Veylib\Checksums", true);
+
+            // Make sure it's not null, if so, create one
+            if (key == null)
+                key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Veylib\Checksums", true);
+
+            // Iterate through each loaded module
+            foreach (var checksum in checksums)
+                key.SetValue(checksum.Key, checksum.Value);
         }
     }
 }
