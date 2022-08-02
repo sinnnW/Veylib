@@ -1,5 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.IO;
+using System;
 
 namespace Veylib.Security
 {
@@ -19,6 +21,23 @@ namespace Veylib.Security
                 res.Append(sha[x].ToString("X2"));
 
             return res.ToString();
+        }
+
+        /// <summary>
+        /// Get a file's checksum in MD5
+        /// </summary>
+        /// <param name="filepath">Path to file</param>
+        /// <returns>MD5 Checksum</returns>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static string FileChecksum(string filepath)
+        {
+            if (!File.Exists(filepath))
+                throw new FileNotFoundException();
+
+            var md5 = MD5.Create();
+            var stream = File.OpenRead(filepath);
+
+            return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty);
         }
     }
 }
