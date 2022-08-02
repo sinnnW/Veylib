@@ -1,6 +1,7 @@
 .git/
 .vs/
 .vscode/
+lib/
 Veylib/bin
 Veylib/obj
 *.nupkg
