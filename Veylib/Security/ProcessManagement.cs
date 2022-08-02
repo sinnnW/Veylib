@@ -24,27 +24,15 @@ namespace Veylib.Security
         /// </summary>
         public event ProcessEventHandler ProcessViolation;
 
-        public ProcessManagement()
-        {
-            // Start threads for each monitor
-            new Thread(processMon).Start();
-            new Thread(moduleMon).Start();
-        }
-
         /// <summary>
         /// Settings for process management
         /// </summary>
         public class Settings
         {
             /// <summary>
-            /// The running process
-            /// </summary>
-            public readonly Process CurrentProcess = Process.GetCurrentProcess();
-
-            /// <summary>
             /// All modules loaded
             /// </summary>
-            public readonly ProcessModuleCollection LoadedModules = Process.GetCurrentProcess().Modules;
+            internal ProcessModuleCollection LoadedModules;
             
             /// <summary>
             /// Blacklisted executables
@@ -89,6 +77,46 @@ namespace Veylib.Security
         }
 
         /// <summary>
+        /// Start monitors
+        /// </summary>
+        public void Start()
+        {
+            CurrentSettings.LoadedModules = Process.GetCurrentProcess().Modules;
+
+            // Check all DLLs
+            validateDlls();
+
+            Thread.Sleep(2500);
+
+            // Start threads for each monitor
+            new Thread(processMon).Start();
+            new Thread(moduleMon).Start();
+        }
+
+        /// <summary>
+        /// Redo the cached checksums in the registry
+        /// </summary>
+        public void ReCacheModuleChecksums()
+        {
+            // New dictionary to supply
+            var dict = new Dictionary<string, string>();
+
+            // Iterate through each module
+            foreach (ProcessModule mod in Process.GetCurrentProcess().Modules)
+            {
+                // Get filename
+                var split = mod.FileName.Split('\\');
+                string filename = split.GetValue(split.Length - 1).ToString();
+
+                // Add to dictionary
+                dict.Add(filename, Hashing.FileChecksum(mod.FileName));
+            }
+
+            // Finally, cache
+            Hashing.CacheChecksums(dict);
+        }
+
+        /// <summary>
         /// There was a process that violated something
         /// </summary>
         /// <param name="violator">Process</param>
@@ -108,11 +136,11 @@ namespace Veylib.Security
         internal void validateDlls()
         {
             // Open subkey
-            var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Veylib\Checksums", true);
+            var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Veylib\Checksums", true);
 
             // Make sure it's not null, if so, create one
             if (key == null)
-                key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Veylib\Checksums", true);
+                key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Veylib\Checksums", true);
 
             // Iterate through each loaded module
             foreach (ProcessModule mod in CurrentSettings.LoadedModules)
@@ -131,7 +159,7 @@ namespace Veylib.Security
                 if (val == null)
                     key.SetValue(filename, checksum);
                 else if (val.ToString() != checksum) // Make sure it matches, else, it's a violation
-                    violation(new Violation { Description = "Module checksum invalid" });
+                    violation(new Violation { Description = "Module checksum invalid", Associated = new Process { StartInfo = new ProcessStartInfo { FileName = filename } } });
             }
         }
 
@@ -186,11 +214,21 @@ namespace Veylib.Security
                 try
                 {
                     // Cycle through loaded modules
-                    foreach (ProcessModule mod in CurrentSettings.CurrentProcess.Modules)
-                        if (!CurrentSettings.LoadedModules.Contains(mod)) // Make sure module is whitelisted
-                            violation(new Violation { Description = "Module mismatch" });
+                    foreach (ProcessModule mod in Process.GetCurrentProcess().Modules)
+                    {
+                        int fail = 0;
+                        foreach (ProcessModule cachedMod in CurrentSettings.LoadedModules)
+                            if (cachedMod.ModuleName != mod.ModuleName) // Make sure module is whitelisted
+                                fail++;
+
+                        if (fail >= CurrentSettings.LoadedModules.Count)
+                                    violation(new Violation { Description = $"Module mismatch", Associated = new Process { StartInfo = new ProcessStartInfo { FileName = mod.FileName } } });
+                    }
                 }
                 catch { }
+
+                // Delay for set interval
+                Thread.Sleep(CurrentSettings.Interval);
             }
         }
     }

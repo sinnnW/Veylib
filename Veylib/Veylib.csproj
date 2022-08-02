@@ -59,9 +59,11 @@
     <Compile Include="DependencyControl.cs" />
     <Compile Include="English\English.cs" />
     <Compile Include="General.cs" />
+    <Compile Include="ICLI\SettingsMenu.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyLoader.cs" />
     <Compile Include="Security\Hashing.cs" />
+    <Compile Include="Security\ProcessManagement.cs" />
     <Compile Include="WinForms\Animations\Fade.cs" />
     <Compile Include="WinForms\Movement.cs" />
   </ItemGroup>
