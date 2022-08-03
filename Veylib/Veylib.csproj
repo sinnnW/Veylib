@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -64,6 +65,8 @@
     <Compile Include="ProxyLoader.cs" />
     <Compile Include="Security\Hashing.cs" />
     <Compile Include="Security\ProcessManagement.cs" />
+    <Compile Include="Utilities\Net\NetRequest.cs" />
+    <Compile Include="Utilities\PastebinAPI.cs" />
     <Compile Include="WinForms\Animations\Fade.cs" />
     <Compile Include="WinForms\Movement.cs" />
   </ItemGroup>
