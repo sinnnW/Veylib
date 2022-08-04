@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
+using System.Reflection;
+using System.IO;
+using System.Management;
 using Microsoft.Win32;
 
 namespace Veylib.Security
@@ -55,6 +58,21 @@ namespace Veylib.Security
             public bool Strict = true;
 
             /// <summary>
+            /// Allow multiple instances
+            /// </summary>
+            public bool AllowMultipleInstances = false;
+
+            /// <summary>
+            /// Allow app to run on VMs
+            /// </summary>
+            public bool AllowVMs = true;
+
+            /// <summary>
+            /// Allow debugger attaching
+            /// </summary>
+            public bool AllowDebugger = false;
+
+            /// <summary>
             /// Interval between checks
             /// </summary>
             public TimeSpan Interval = new TimeSpan(0, 0, 15);
@@ -81,16 +99,16 @@ namespace Veylib.Security
         /// </summary>
         public void Start()
         {
-            CurrentSettings.LoadedModules = Process.GetCurrentProcess().Modules;
+            new Thread(() =>
+            {
+                CurrentSettings.LoadedModules = Process.GetCurrentProcess().Modules;
 
-            // Check all DLLs
-            validateDlls();
+                // Check all DLLs
+                validateDlls();
 
-            Thread.Sleep(2500);
-
-            // Start threads for each monitor
-            new Thread(processMon).Start();
-            new Thread(moduleMon).Start();
+                // Start monitor thread
+                monitor();
+            }).Start();
         }
 
         /// <summary>
@@ -98,22 +116,11 @@ namespace Veylib.Security
         /// </summary>
         public void ReCacheModuleChecksums()
         {
-            // New dictionary to supply
-            var dict = new Dictionary<string, string>();
+            var sub = Registry.CurrentUser.OpenSubKey(@"Software\Veylib\Checksums", true);
+            foreach (string name in sub.GetValueNames())
+                sub.DeleteValue(name);
 
-            // Iterate through each module
-            foreach (ProcessModule mod in Process.GetCurrentProcess().Modules)
-            {
-                // Get filename
-                var split = mod.FileName.Split('\\');
-                string filename = split.GetValue(split.Length - 1).ToString();
-
-                // Add to dictionary
-                dict.Add(filename, Hashing.FileChecksum(mod.FileName));
-            }
-
-            // Finally, cache
-            Hashing.CacheChecksums(dict);
+            validateDlls();
         }
 
         /// <summary>
@@ -135,12 +142,15 @@ namespace Veylib.Security
         /// </summary>
         internal void validateDlls()
         {
+            if (CurrentSettings?.LoadedModules == null)
+                return;
+
             // Open subkey
-            var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Veylib\Checksums", true);
+            var key = Registry.CurrentUser.OpenSubKey(@"Software\Veylib\Checksums", true);
 
             // Make sure it's not null, if so, create one
             if (key == null)
-                key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Veylib\Checksums", true);
+                key = Registry.CurrentUser.CreateSubKey(@"Software\Veylib\Checksums", true);
 
             // Iterate through each loaded module
             foreach (ProcessModule mod in CurrentSettings.LoadedModules)
@@ -166,7 +176,7 @@ namespace Veylib.Security
         /// <summary>
         /// Monitor system processes
         /// </summary>
-        internal protected void processMon()
+        internal protected void monitor()
         {
             // No stop
             while (true)
@@ -174,6 +184,10 @@ namespace Veylib.Security
                 // Make sure that it won't crash
                 try
                 {
+                    // Make sure nothing is debugging
+                    if (Debugger.IsAttached && !CurrentSettings.AllowDebugger)
+                        violation(new Violation { Description = "Debugger detected", Associated = Process.GetCurrentProcess() });
+
                     // Gather all processes
                     var procs = Process.GetProcesses();
 
@@ -195,25 +209,9 @@ namespace Veylib.Security
                             if (proc.MainWindowTitle.Contains(title))
                                 violation(new Violation { Associated = proc, Description = "Blacklisted window title was detected" });
                     }
-                } catch { }
 
-                // Delay for the set interval
-                Thread.Sleep(CurrentSettings.Interval);
-            }
-        }
-
-        /// <summary>
-        /// Monitor loaded modules
-        /// </summary>
-        internal void moduleMon()
-        {
-            // No stop
-            while (true)
-            {
-                // No crash
-                try
-                {
                     // Cycle through loaded modules
+                    /*
                     foreach (ProcessModule mod in Process.GetCurrentProcess().Modules)
                     {
                         int fail = 0;
@@ -221,13 +219,37 @@ namespace Veylib.Security
                             if (cachedMod.ModuleName != mod.ModuleName) // Make sure module is whitelisted
                                 fail++;
 
+                        // If it's higher than the loaded count, then the module is not whitelisted, aka, it was not initially loaded (could signify an injected DLL)
                         if (fail >= CurrentSettings.LoadedModules.Count)
-                                    violation(new Violation { Description = $"Module mismatch", Associated = new Process { StartInfo = new ProcessStartInfo { FileName = mod.FileName } } });
+                            violation(new Violation { Description = $"Module mismatch", Associated = new Process { StartInfo = new ProcessStartInfo { FileName = mod.FileName } } });
                     }
-                }
-                catch { }
+                    */
 
-                // Delay for set interval
+                    // Multiple instance detection
+                    if (!CurrentSettings.AllowMultipleInstances)
+                    {
+                        // Get all instances
+                        var instances = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location));
+                        if (instances.Length > 1)
+                            violation(new Violation { Description = "Multiple instances", Associated = Process.GetCurrentProcess() });
+                    }
+
+                    // VM detection
+                    if (!CurrentSettings.AllowVMs)
+                    {
+                        // Create a search and check the computer's specs
+                        var search = new ManagementObjectSearcher("Select * from Win32_ComputerSystem");
+                        foreach (var item in search.Get())
+                        {
+                            // Check manufacturer
+                            string mf = item["Manufacturer"].ToString().ToLower();
+                            if ((mf == "microsoft corperation" && item["Model"].ToString().ToLowerInvariant().Contains("virtual")) || mf.Contains("vmware") || item["Model"].ToString() == "VirtualBox")
+                                violation(new Violation { Description = "VM detected", Associated = Process.GetCurrentProcess() });
+                        }
+                    }
+                } catch { }
+
+                // Delay for the set interval
                 Thread.Sleep(CurrentSettings.Interval);
             }
         }
