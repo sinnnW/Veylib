@@ -17,6 +17,11 @@ namespace Veylib.Utilities.Net
             request = Create(url);
         }
 
+        public NetRequest(Uri uri)
+        {
+            request = Create(uri);
+        }
+
         /// <summary>
         /// Set request method
         /// </summary>
