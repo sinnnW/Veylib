@@ -58,13 +58,13 @@
     <Compile Include="ICLI\SelectionMenu.cs" />
     <Compile Include="ColorManagement.cs" />
     <Compile Include="DependencyControl.cs" />
-    <Compile Include="English\English.cs" />
     <Compile Include="General.cs" />
     <Compile Include="ICLI\SettingsMenu.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyLoader.cs" />
     <Compile Include="Security\Hashing.cs" />
     <Compile Include="Security\ProcessManagement.cs" />
+    <Compile Include="Utilities\GithubAPI.cs" />
     <Compile Include="Utilities\Net\NetRequest.cs" />
     <Compile Include="Utilities\PastebinAPI.cs" />
     <Compile Include="WinForms\Animations\Fade.cs" />
@@ -77,20 +77,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Authentication\App.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="English\adjectives.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="English\adverbs.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="English\names.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="English\verbs.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
