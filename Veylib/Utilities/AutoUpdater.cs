@@ -4,8 +4,10 @@ using System.Net;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using Octokit;
 
 using Veylib.Utilities.Net;
+using System.IO.Compression;
 
 namespace Veylib.Utilities
 {
@@ -111,13 +113,6 @@ namespace Veylib.Utilities
             {
                 try
                 {
-                    // Events are cool
-                    UpdateAvailable?.Invoke(this, new UpdateEventArgs { Message = $"Update available to version {CurrentSettings.LatestVersion}" });
-
-                    // Make sure we actually update, and not just notify
-                    if (CurrentSettings.Mode != Settings.UpdateMode.Update)
-                        return;
-
                     // Get file name and split it to parts, then add a random number
                     var split = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName).Split('.').ToList();
                     split[split.Count - 2] += $"-{rand.Next(100, 999)}";
@@ -129,6 +124,80 @@ namespace Veylib.Utilities
                     // Create the batch file
                     createBat(name);
                 } catch (Exception ex)
+                {
+                    // Bruh.
+                    UpdateFailed?.Invoke(this, new UpdateEventArgs { Exception = ex });
+                }
+            }).Start();
+        }
+
+        internal void updateFromGithub()
+        {
+            // Thread it.
+            new Thread(() =>
+            {
+                try
+                {
+                    // Get file name and split it to parts, then add a random number
+                    var split = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName).Split('.').ToList();
+                    split[split.Count - 2] += $"-{rand.Next(1000, 9999)}";
+                    string name = string.Join(".", split); // Concatenation
+
+                    var client = new GitHubClient(new ProductHeaderValue("Veylib"));
+                    var release = client.Repository.Release.GetAll(CurrentSettings.Github.Username, CurrentSettings.Github.Repo).GetAwaiter().GetResult().Last();
+
+                    int fail = 0;
+                    bool isZipped = false;
+                    foreach (var asset in release.Assets)
+                    {
+                        if (asset.Name.ToLower().Contains(CurrentSettings.Github.AssetNameContains.ToLower()))
+                        {
+                            if (asset.Name.Contains(".zip"))
+                            {
+                                isZipped = true;
+                                name = $"github-asset-{rand.Next(1000, 9999)}.zip";
+                            }
+
+                            // Download the file
+                            NetRequest.DownloadFile(asset.BrowserDownloadUrl, name);
+                            break;
+                        }
+                        else
+                            fail++;
+                    }
+
+                    if (fail == release.Assets.Count)
+                    {
+                        UpdateFailed?.Invoke(this, new UpdateEventArgs { Message = "No suitable assets found " });
+                        return;
+                    }
+
+                    if (isZipped)
+                    {
+                        fail = 0;
+                        string dir = name.Remove(name.Length - 5, 4);
+                        ZipFile.ExtractToDirectory(name, dir);
+
+                        var files = Directory.GetFiles(dir);
+                        foreach (var file in files)
+                        {
+                            if (!file.ToLower().Contains(CurrentSettings.Github.FileNameContains.ToLower()))
+                                fail++;
+                            else
+                                name = file;
+                        }
+
+                        if (fail == files.Length)
+                        {
+                            UpdateFailed?.Invoke(this, new UpdateEventArgs { Message = "No suitable file found in zip archive" });
+                            return;
+                        }
+                    }
+
+                    // Create the batch file
+                    createBat(name);
+                }
+                catch (Exception ex)
                 {
                     // Bruh.
                     UpdateFailed?.Invoke(this, new UpdateEventArgs { Exception = ex });
@@ -162,8 +231,18 @@ namespace Veylib.Utilities
                 if (diff <= 0)
                     return false;
 
+                // Events are cool
+                UpdateAvailable?.Invoke(this, new UpdateEventArgs { Message = $"Update available to version {CurrentSettings.LatestVersion}" });
+
+                // Make sure we actually update, and not just notify
+                if (CurrentSettings.Mode != Settings.UpdateMode.Update)
+                    return false;
+
                 // Behind latest update, attempt update
-                update();
+                if (CurrentSettings.Github.Enabled)
+                    updateFromGithub();
+                else
+                    update();
                 return true;
             } catch (Exception ex)
             {
@@ -218,6 +297,17 @@ namespace Veylib.Utilities
             /// The current mode
             /// </summary>
             public UpdateMode Mode = UpdateMode.Update;
+
+            public GithubRepo Github = new GithubRepo();
+
+            public class GithubRepo
+            {
+                public bool Enabled = false;
+                public string Username;
+                public string Repo;
+                public string AssetNameContains;
+                public string FileNameContains;
+            }
         }
     }
 }
