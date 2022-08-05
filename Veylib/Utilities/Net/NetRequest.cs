@@ -98,6 +98,17 @@ namespace Veylib.Utilities.Net
             // Return
             return nr;
         }
+
+        public static void DownloadFile(string url, string path)
+        {
+            DownloadFile(new Uri(url), path);
+        }
+
+        public static void DownloadFile(Uri uri, string path)
+        {
+            var client = new WebClient();
+            client.DownloadFile(uri, path);
+        }
     }
 
     /// <summary>
