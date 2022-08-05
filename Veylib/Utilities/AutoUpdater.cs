@@ -35,21 +35,25 @@ namespace Veylib.Utilities
             {
                 // Batch file.
                 string content = @"@echo off
-
+    echo Auto updater by verlox via Veylib.
+    echo github.com/verlox/Veylib
+    echo.
     title Waiting for application to close
-    echo [43mWaiting for application to close[0m
+    echo|set /p=""[33mWaiting for application to close[0m""
 
     :loop
-    tasklist /FI ""PID eq {pid}"" | find /i ""{pid}""
+    tasklist /FI ""PID eq {pid}"" | find /i ""{pid}"" > nul
     IF ERRORLEVEL 1 (
-      GOTO cont
+      goto cont
     ) else (
-      TIMEOUT /T 1 > nul
-      GOTO loop
+      timeout /T 1 > nul
+      echo|set /p="".""
+      goto loop
     )
-    GOTO loop
+    goto loop
 
     :cont
+    echo.
 
     title Updating application
     echo [97mUpdating to version {version}[0m
@@ -58,10 +62,11 @@ namespace Veylib.Utilities
     cd {dir}
 
     del {originalName}
-    move {currentName} {originalName}
+    move {currentName} {originalName} > nul
 
-    echo [92mUpdated![0m
+    echo [92mUpdated to {version} succesfully![0m
     start {originalName}
+    timeout /T 2 > nul
     ";
 
                 // Get directory and drive, in case it's in another one than the temp directory
@@ -83,6 +88,7 @@ namespace Veylib.Utilities
                 // Create process
                 var proc = new Process();
                 proc.StartInfo.FileName = updaterPath;
+                proc.StartInfo.CreateNoWindow = CurrentSettings.HideUpdaterWindow;
                 proc.Start();
 
                 // Application can be restarted now
@@ -182,7 +188,12 @@ namespace Veylib.Utilities
             /// Automatically restart the application when ready
             /// </summary>
             public bool AutoRestart = true;
-            
+
+            /// <summary>
+            /// Hide the updater batch
+            /// </summary>
+            public bool HideUpdaterWindow = true;
+
             /// <summary>
             /// URI of **RAW** text of version (EXAMPLE OF VALID SITE CONTENT: 1.0.0.0)
             /// </summary>
