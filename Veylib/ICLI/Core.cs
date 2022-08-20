@@ -799,7 +799,7 @@ namespace Veylib.ICLI
 
             // Find the longest part of the logo for auto sizing
             int longestLen = 0;
-            if (StartProperty.Logo.Text != null)
+            if (StartProperty.Logo?.Text != null)
                 foreach (var line in StartProperty.Logo.Text.Split('\n'))
                     if (Formatting.VisibleString(line).Length > longestLen)
                         longestLen = Formatting.VisibleString(line).Length;
@@ -984,7 +984,7 @@ namespace Veylib.ICLI
             int longest = 0;
 
             // Write each line of the logo if it's set
-            if (StartProperty.Logo.Text != null)
+            if (StartProperty.Logo?.Text != null)
             {
                 if (StartProperty.Logo.AutoCenter)
                     foreach (var line in StartProperty.Logo.Text.Split('\n'))
