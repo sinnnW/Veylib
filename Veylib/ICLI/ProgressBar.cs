@@ -47,8 +47,8 @@ namespace Veylib.ICLI
         /// </summary>
         public class Settings
         {
-            public int TotalParts = 4;
-            public int Progress = 0;
+            public double TotalParts = 4;
+            public double Progress = 0;
             public Style Style = new Style();
         }
 
@@ -70,14 +70,14 @@ namespace Veylib.ICLI
         }
 
         public Settings CurrentSettings;
-        public decimal PartLength
+        public double PartLength
         {
-            get { return (decimal)(Console.WindowWidth - 2 - (CurrentSettings.Style.SideSpace * 2)) / CurrentSettings.TotalParts; }
+            get { return (Console.WindowWidth - 2 - (CurrentSettings.Style.SideSpace * 2)) / CurrentSettings.TotalParts; }
         }
 
-        public decimal PartLengthWithCompletion
+        public double  PartLengthWithCompletion
         {
-            get { return (decimal)(Console.WindowWidth - 6 - ((CurrentSettings.TotalParts.ToString().Length * 2) + (CurrentSettings.Style.SideSpace * 2))) / CurrentSettings.TotalParts; }
+            get { return (Console.WindowWidth - 6 - ((CurrentSettings.TotalParts.ToString().Length * 2) + (CurrentSettings.Style.SideSpace * 2))) / CurrentSettings.TotalParts; }
         }
 
         public int InnerLength
@@ -90,7 +90,7 @@ namespace Veylib.ICLI
         /// </summary>
         /// <param name="progress">Amount</param>
         /// <returns>Current progress</returns>
-        public int AddProgress(int progress)
+        public double AddProgress(int progress)
         {
             if (CurrentSettings.Progress < CurrentSettings.TotalParts)
                 CurrentSettings.Progress += progress;
@@ -102,7 +102,7 @@ namespace Veylib.ICLI
         /// Add a single point of progress
         /// </summary>
         /// <returns>Current progress</returns>
-        public int AddProgress()
+        public double AddProgress()
         {
             return AddProgress(1);
         }
