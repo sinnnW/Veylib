@@ -25,10 +25,14 @@ namespace Veylib.Utilities
 
         public Settings CurrentSettings = new Settings();
         private Random rand = new Random();
-
-        public AutoUpdater()
+        
+        /// <summary>
+        /// Start the auto updater
+        /// </summary>
+        /// <param name="settings">Settings to use</param>
+        public AutoUpdater(Settings settings)
         {
-
+            CurrentSettings = settings;
         }
 
         internal void createBat(string downloadedName)
@@ -252,6 +256,9 @@ namespace Veylib.Utilities
             }
         }
 
+        /// <summary>
+        /// Settings for the auto updater
+        /// </summary>
         public class Settings
         {
             /// <summary>
