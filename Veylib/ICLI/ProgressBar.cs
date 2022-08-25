@@ -35,7 +35,8 @@ namespace Veylib.ICLI
             CurrentSettings = new Settings { };
         }
 
-        public Core core = Core.GetInstance();
+        // Probably gonna need this
+        private Core core = Core.GetInstance();
 
         /// <summary>
         /// Docking positions for the progress bar
@@ -52,8 +53,19 @@ namespace Veylib.ICLI
         /// </summary>
         public class Settings
         {
+            /// <summary>
+            /// Total parts of the bar
+            /// </summary>
             public double TotalParts = 4;
+
+            /// <summary>
+            /// Current progression
+            /// </summary>
             public double Progress = 0;
+
+            /// <summary>
+            /// Styling
+            /// </summary>
             public Style Style = new Style();
         }
 
@@ -62,29 +74,71 @@ namespace Veylib.ICLI
         /// </summary>
         public class Style
         {
+            /// <summary>
+            /// What character should each part of the progress bar be
+            /// </summary>
             public char FillingChar = '=';
 
+            /// <summary>
+            /// The color of the characters that fill the bar
+            /// </summary>
             public Color FillingColor = Color.Gray;
+
+            /// <summary>
+            /// The bracket color
+            /// </summary>
             public Color EdgeColor = Color.White;
+
+            /// <summary>
+            /// The completion label color
+            /// </summary>
             public Color CompletionLabelColor = Color.White;
 
+            /// <summary>
+            /// Completion label (ex: 10/20)
+            /// </summary>
             public bool DisplayCompletion = false;
+
+            /// <summary>
+            /// Margin size
+            /// </summary>
             public int SideSpace = 5;
+
+            /// <summary>
+            /// Dock position
+            /// </summary>
             public Dock Dock = Dock.Bottom;
+            
+            /// <summary>
+            /// Margin on dock
+            /// </summary>
             public int DockOffset = 1;
         }
 
+        /// <summary>
+        /// Current settings
+        /// </summary>
         public Settings CurrentSettings;
+
+        /// <summary>
+        /// Get the size of each part
+        /// </summary>
         public double PartLength
         {
             get { return (Console.WindowWidth - 2 - (CurrentSettings.Style.SideSpace * 2)) / CurrentSettings.TotalParts; }
         }
 
+        /// <summary>
+        /// Get the size of each part (when completion label is enabled)
+        /// </summary>
         public double  PartLengthWithCompletion
         {
             get { return (Console.WindowWidth - 6 - ((CurrentSettings.TotalParts.ToString().Length * 2) + (CurrentSettings.Style.SideSpace * 2))) / CurrentSettings.TotalParts; }
         }
 
+        /// <summary>
+        /// The size of the inside of the bar
+        /// </summary>
         public int InnerLength
         {
             get { return Console.WindowWidth - (CurrentSettings.Style.SideSpace * 2) - (CurrentSettings.Style.DisplayCompletion ? (CurrentSettings.TotalParts.ToString().Length * 2) + 4 : 0) - 2; }
@@ -97,9 +151,11 @@ namespace Veylib.ICLI
         /// <returns>Current progress</returns>
         public double AddProgress(int progress)
         {
+            // Make sure it won't overflow
             if (CurrentSettings.Progress < CurrentSettings.TotalParts)
                 CurrentSettings.Progress += progress;
 
+            // :)
             return CurrentSettings.Progress;
         }
 
@@ -131,16 +187,18 @@ namespace Veylib.ICLI
         /// <returns>Progress bar</returns>
         public override string ToString()
         {
+            // Amount of fill characters to show
             int filledLen = (int)Math.Round(CurrentSettings.Progress * (CurrentSettings.Style.DisplayCompletion ? PartLengthWithCompletion : PartLength));
-            //string inner = $"{new string('=', filledLen)}{new string(' ', (int)Math.Round((CurrentSettings.Style.DisplayCompletion ? PartLengthWithCompletion : PartLength) * (CurrentSettings.TotalParts - CurrentSettings.Progress)))}";
+
+            // The inside of the bar
             string inner = $"{new string(CurrentSettings.Style.FillingChar, filledLen)}{new string(' ', InnerLength - filledLen)}";
 
+            // The completion label
             string completionInner = $"{CurrentSettings.Progress}{new string(' ', CurrentSettings.TotalParts.ToString().Length - CurrentSettings.Progress.ToString().Length)}/{CurrentSettings.TotalParts}";
 
+            // Return the finished product
             if (CurrentSettings.Style.DisplayCompletion)
-            {
                 return $"{new string(' ', CurrentSettings.Style.SideSpace)}[{inner}] [{completionInner}]";
-            }
             else
                 return $"{new string(' ', CurrentSettings.Style.SideSpace)}[{inner}]";
         }
@@ -151,26 +209,20 @@ namespace Veylib.ICLI
         /// </summary>
         public void Render()
         {
+            // Make sure we ain't just wastin memory
             string pb = ToString();
             if (pb == last)
                 return;
             else if (removed)
                 return;
 
-            int y = CurrentSettings.Style.DockOffset;
-            switch (CurrentSettings.Style.Dock)
-            {
-                case Dock.Center:
-                    y = (int)Math.Floor((decimal)Console.WindowHeight / 2);
-                    break;
-                case Dock.Bottom:
-                    y = Console.WindowHeight - CurrentSettings.Style.DockOffset;
-                    break;
-            }
-
+            // Write one line above the current line (prevents trailing progress bars)
             core.WriteLine(new Core.MessageProperties { Label = null, Time = null, NoNewLine = true, DockOffset = new Core.DockOffset { Bottom = 3 }, BypassLock = true }, new string(' ', Console.WindowWidth));
 
+            // Get the last line in the window
             lastLineY = Console.WindowTop + Console.WindowHeight - CurrentSettings.Style.DockOffset;
+
+            // The actual properties for the message
             var mp = new Core.MessageProperties
             {
                 BypassLock = true,
@@ -181,6 +233,7 @@ namespace Veylib.ICLI
                 NoNewLine = true
             };
 
+            // Adding final groups
             if (CurrentSettings.Style.DisplayCompletion)
             {
                 mp.ColoringGroups.Add(new object[] { CurrentSettings.Style.EdgeColor, " [" });
@@ -189,13 +242,20 @@ namespace Veylib.ICLI
             }
 
             last = pb;
-            //Core.setWindow();
+
+            // :)
             core.WriteLine(mp);
         }
 
+        /// <summary>
+        /// Remove a progress bar
+        /// </summary>
         public void Remove() 
         {
+            // Save our memory or smth
             removed = true;
+
+            // ;(
             core.WriteLine(new Core.MessageProperties { Label = null, Time = null, NoNewLine = true, YCood = lastLineY, BypassLock = true }, new string(' ', Console.WindowWidth));
         }
     }
