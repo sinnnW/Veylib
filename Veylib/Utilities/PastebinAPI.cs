@@ -37,7 +37,7 @@ namespace Veylib.Utilities
         /// <summary>
         /// Paste structure
         /// </summary>
-        public struct Paste
+        public class Paste
         {
             public Paste() {
                 Url = null;
