@@ -147,17 +147,26 @@ namespace Veylib.Utilities
                     split[split.Count - 2] += $"-{rand.Next(1000, 9999)}";
                     string name = string.Join(".", split); // Concatenation
 
+                    // Create a github client and put the header as Veylib
                     var client = new GitHubClient(new ProductHeaderValue("Veylib"));
+
+                    // Get a list of releases
                     var release = client.Repository.Release.GetAll(CurrentSettings.Github.Username, CurrentSettings.Github.Repo).GetAwaiter().GetResult().Last();
 
+                    // Fail counter
                     int fail = 0;
                     bool isZipped = false;
+
+                    // Check each asset and see if its the correct one
                     foreach (var asset in release.Assets)
                     {
+                        // Validation
                         if (asset.Name.ToLower().Contains(CurrentSettings.Github.AssetNameContains.ToLower()))
                         {
+                            // Check if it's zipped
                             if (asset.Name.Contains(".zip"))
                             {
+                                // Ok.
                                 isZipped = true;
                                 name = $"github-asset-{rand.Next(1000, 9999)}.zip";
                             }
@@ -170,27 +179,33 @@ namespace Veylib.Utilities
                             fail++;
                     }
 
+                    // I'm tired
                     if (fail == release.Assets.Count)
                     {
                         UpdateFailed?.Invoke(this, new UpdateEventArgs { Message = "No suitable assets found " });
                         return;
                     }
 
+                    // Use brain
                     if (isZipped)
                     {
+                        // Extract or something
                         fail = 0;
                         string dir = name.Remove(name.Length - 5, 4);
                         ZipFile.ExtractToDirectory(name, dir);
 
+                        // My contact keeps getting blurry
                         var files = Directory.GetFiles(dir);
                         foreach (var file in files)
                         {
+                            // More validation
                             if (!file.ToLower().Contains(CurrentSettings.Github.FileNameContains.ToLower()))
                                 fail++;
                             else
                                 name = file;
                         }
 
+                        // Fuck.
                         if (fail == files.Length)
                         {
                             UpdateFailed?.Invoke(this, new UpdateEventArgs { Message = "No suitable file found in zip archive" });
@@ -215,6 +230,7 @@ namespace Veylib.Utilities
         /// <returns>True if update required</returns>
         public bool Check()
         {
+            // No crash (same)
             try
             {
                 // Send a request to attempt to get the latest version
@@ -305,14 +321,39 @@ namespace Veylib.Utilities
             /// </summary>
             public UpdateMode Mode = UpdateMode.Update;
 
+            /// <summary>
+            /// Github settings
+            /// </summary>
             public GithubRepo Github = new GithubRepo();
 
+            /// <summary>
+            /// Github related settings
+            /// </summary>
             public class GithubRepo
             {
+                /// <summary>
+                /// Status
+                /// </summary>
                 public bool Enabled = false;
+
+                /// <summary>
+                /// Github username
+                /// </summary>
                 public string Username;
+
+                /// <summary>
+                /// Github repository name
+                /// </summary>
                 public string Repo;
+
+                /// <summary>
+                /// Asset name must contain the following string on a release
+                /// </summary>
                 public string AssetNameContains;
+
+                /// <summary>
+                /// The file name must contain the following string inside the .zip (if it's zipped)
+                /// </summary>
                 public string FileNameContains;
             }
         }
