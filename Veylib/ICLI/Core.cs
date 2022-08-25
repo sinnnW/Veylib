@@ -104,11 +104,20 @@ namespace Veylib.ICLI
                 return $"{input}{new string(' ', (length - input.Length > 0 ? length - input.Length : 0))}";
             }
 
+            /// <summary>
+            /// Make a string horizontally rainbow
+            /// </summary>
+            /// <param name="input">String to make rainbow</param>
+            /// <param name="rotation">Current HSV rotation</param>
+            /// <param name="offset">Offset in HSV</param>
+            /// <returns>String with color tags inserted</returns>
             public static string HorizontalRainbow(string input, int rotation = 0, int? offset = null)
             {
+                //  Have to do this, can't set something that can change (compiler issue)
                 if (offset == null)
                     offset = StartProperty?.HorizontalColorRotationOffset ?? 2;
 
+                // Create each color and append it
                 var sb = new StringBuilder();
                 foreach (char c in input)
                 {
@@ -117,11 +126,17 @@ namespace Veylib.ICLI
                     rotation += offset ?? 2;
                 }
 
+                // This is the result
                 return sb.ToString();
             }
 
+            /// <summary>
+            /// Remove all color tags in a string
+            /// </summary>
+            /// <param name="input">Input</summary>
             public static string VisibleString(string input)
             {
+                // Remove anything that looks like color tags
                 var regex = new Regex(@"\x1b\[38;2;[0-9]{1,3};[0-9]{1,3};[0-9]{1,3}m");
                 return regex.Replace(input, "");
             }
@@ -799,7 +814,7 @@ namespace Veylib.ICLI
 
             // Find the longest part of the logo for auto sizing
             int longestLen = 0;
-            if (StartProperty.Logo.Text != null)
+            if (StartProperty.Logo?.Text != null)
                 foreach (var line in StartProperty.Logo.Text.Split('\n'))
                     if (Formatting.VisibleString(line).Length > longestLen)
                         longestLen = Formatting.VisibleString(line).Length;
@@ -984,7 +999,7 @@ namespace Veylib.ICLI
             int longest = 0;
 
             // Write each line of the logo if it's set
-            if (StartProperty.Logo.Text != null)
+            if (StartProperty.Logo?.Text != null)
             {
                 if (StartProperty.Logo.AutoCenter)
                     foreach (var line in StartProperty.Logo.Text.Split('\n'))
