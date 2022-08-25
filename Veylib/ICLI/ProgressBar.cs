@@ -25,6 +25,11 @@ namespace Veylib.ICLI
             CurrentSettings = new Settings { TotalParts = totalParts };
         }
 
+        public ProgressBar(double totalParts)
+        {
+            CurrentSettings = new Settings { TotalParts = totalParts };
+        }
+
         public ProgressBar()
         {
             CurrentSettings = new Settings { };
