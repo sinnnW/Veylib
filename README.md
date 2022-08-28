@@ -1,7 +1,7 @@
 <div align="center">
 
 # Veylib
-A lightweight, simplistic, and versitile library for C# applications
+A lightweight, simplistic, and versatile library for C# applications.
 
 [![wakatime](https://wakatime.com/badge/user/0ccf7ed5-30a2-486d-8ea4-6b0ca58cd9c9/project/3b474118-cf1e-4b6a-bba2-1c30ece40015.svg)](https://wakatime.com/badge/user/0ccf7ed5-30a2-486d-8ea4-6b0ca58cd9c9/project/3b474118-cf1e-4b6a-bba2-1c30ece40015)
 ![Lifecycle](https://img.shields.io/badge/lifecycle-in%20development-green)
@@ -24,5 +24,5 @@ There is a in progress roadmap [here](https://trello.com/b/sGHH6Rjr/veylib) on T
 ## Contributions
 Pull requests are welcome and will always be reviewed and testing before being either accepted or rejected. If you want to see some code that could be improved on or even redone, feel free to open a pull request.
 
-## Documentation
+## Documentation (W.I.P)
 [In progress!](https://github.com/verlox/Veylib/wiki)
